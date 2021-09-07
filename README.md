@@ -1,5 +1,8 @@
 # docker-netbootxyz
 
+[![Build Status](https://github.com/netbootxyz/docker-netbootxyz/workflows/build/badge.svg)](https://github.com/netbootxyz/docker-netbootxyz/actions?query=workflow%3Abuild)
+[![Discord](https://img.shields.io/discord/425186187368595466)](https://discord.gg/An6PA2a)
+
 ## Overview
 
 The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command.  The container is built from Alpine Linux and contains several components:
@@ -66,12 +69,6 @@ services:
 docker-compose pull netbootxyz     # pull the latest image down
 docker-compose up -d netbootxyz    # start containers in the background
 ```
-
-Once the container is started, the netboot.xyz web application can be accessed by the web configuration interface at http://localhost:3000 or via the specified port.
-
-Downloaded web assets will be available at http://localhost:8080 or the specified port.  If you have specified the assets volume, the assets will be available at http://localhost:8080.
-
-If you wish to start over from scratch, you can remove the local configuration folders and upon restart of the container, it will load the default configurations.
 
 ### Accessing the container services
 
