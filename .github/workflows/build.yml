@@ -91,4 +91,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CUSTOM_TAG: ${{ env.VERSION_TAG }}
         WITH_V: true
-        RELEASE_BRANCHES: main
+        RELEASE_BRANCHES: master
