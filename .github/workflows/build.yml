@@ -41,49 +41,8 @@ jobs:
       id: version_check
       continue-on-error: true
       run: |
-        tag=latest
-        IMAGE=netbootxyz/netbootxyz
-        TOKEN=$(curl -sX GET \
-            "https://ghcr.io/token?scope=repository%3Anetbootxyz%2Fnetbootxyz%3Apull" \
-            | jq -r '.token')
-          MULTIDIGEST=$(curl -s \
-              --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-              --header "Authorization: Bearer ${TOKEN}" \
-              "https://ghcr.io/v2/${IMAGE}/manifests/${tag}" \
-              | jq -r 'first(.manifests[].digest)')
-          DIGEST=$(curl -s \
-              --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-              --header "Authorization: Bearer ${TOKEN}" \
-              "https://ghcr.io/v2/${IMAGE}/manifests/${MULTIDIGEST}" \
-              | jq -r '.config.digest')
-          IMAGE_INFO=$(curl -sL \
-            --header "Authorization: Bearer ${TOKEN}" \
-            "https://ghcr.io/v2/${IMAGE}/blobs/${DIGEST}" \
-            | jq -r '.config')
-          IMAGE_RELEASE=$(echo ${IMAGE_INFO} | jq -r '.Labels.build_version' | awk '{print $3}')
-          IMAGE_VERSION=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $1}')
-          NB_RELEASE_NUMBER=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $2}')
-          TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE})
-          if [ -z "${MULTIDIGEST}" ] || [ "${MULTIDIGEST}" == "null" ]; then
-            echo "**** No existing container build found, assuming first build ****"
-            VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
-          elif [ "${WEBAPP_RELEASE}" == "${IMAGE_VERSION}" ]; then
-            echo "**** Version ${WEBAPP_RELEASE} unchanged, checking if there is anything to build..."
-            if [ "${TAG_SHA}" == "${GITHUB_SHA}" ]; then
-              echo "**** Nothing to do, exiting build... **** "
-              exit 1
-            else
-              echo "**** Changes found... incrementing build number version... ****"
-              NB_RELEASE_NUMBER=$((NB_RELEASE_NUMBER + 1))
-              VERSION_TAG=${IMAGE_VERSION}-nbxyz${NB_RELEASE_NUMBER}
-              echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
-            fi
-          else
-            echo "**** New version ${WEBAPP_RELEASE} found; old version was ${IMAGE_VERSION}. Generating new webapp release... ****"
-            VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
-          fi
+        VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
+        echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
         
     - name: Docker meta
       if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
