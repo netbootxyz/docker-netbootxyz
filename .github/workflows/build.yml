@@ -44,7 +44,7 @@ jobs:
         tag=latest
         IMAGE=netbootxyz/netbootxyz
         TOKEN=$(curl -sX GET \
-            "https://ghcr.io/token?scope=repository%3Aantonym%2Fnetbootxyz%3Apull" \
+            "https://ghcr.io/token?scope=repository%3Anetbootxyz%2Fnetbootxyz%3Apull" \
             | jq -r '.token')
           MULTIDIGEST=$(curl -s \
               --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
