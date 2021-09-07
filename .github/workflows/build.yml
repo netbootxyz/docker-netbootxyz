@@ -1,4 +1,4 @@
-name: netbootxyz
+name: build
 on:
   push:
   schedule:
@@ -42,7 +42,7 @@ jobs:
       continue-on-error: true
       run: |
         tag=latest
-        IMAGE=antonym/netbootxyz
+        IMAGE=netbootxyz/netbootxyz
         TOKEN=$(curl -sX GET \
             "https://ghcr.io/token?scope=repository%3Aantonym%2Fnetbootxyz%3Apull" \
             | jq -r '.token')
@@ -119,9 +119,9 @@ jobs:
          VERSION=${{ env.VERSION_TAG }}
          BUILD_DATE=${{ env.GITHUB_DATE }}
         tags: |
-          ghcr.io/antonym/${{ github.workflow }}:latest
-          ghcr.io/antonym/${{ github.workflow }}:${{ github.sha }}
-          ghcr.io/antonym/${{ github.workflow }}:${{ env.VERSION_TAG }}
+          ghcr.io/netbootxyz/netbootxyz:latest
+          ghcr.io/netbootxyz/netbootxyz:${{ github.sha }}
+          ghcr.io/netbootxyz/netbootxyz:${{ env.VERSION_TAG }}
         labels: ${{ steps.meta.outputs.labels }}
         
     - name: Bump version and push tag
