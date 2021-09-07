@@ -28,7 +28,7 @@ docker run -d \
   ghcr.io/netbootxyz/netbootxyz
 ```
 
-#### Updating the image with via docker-cli
+#### Updating the image with docker-cli
 
 ```bash
 docker pull ghcr.io/netbootxyz/netbootxyz   # pull the latest image down
@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
 ```
 
-#### Updating the image with via docker-compose
+#### Updating the image with docker-compose
 
 ```bash
 docker-compose pull netbootxyz     # pull the latest image down
