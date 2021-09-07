@@ -37,9 +37,6 @@ jobs:
         username: ${{ secrets.GHCR_USER }}
         password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
     - name: Determine version numbers
       id: version_check
       continue-on-error: true
