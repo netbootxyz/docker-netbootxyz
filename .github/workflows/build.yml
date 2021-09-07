@@ -133,3 +133,4 @@ jobs:
         CUSTOM_TAG: ${{ env.VERSION_TAG }}
         WITH_V: true
         RELEASE_BRANCHES: master
+
