@@ -142,8 +142,10 @@ jobs:
         echo "DISCORD_EMBEDS=$(jq -nc --arg color "1681177" --arg desc "$DESC" "$TEMPLATE")" >> $GITHUB_ENV
 
     - name: Discord notification
+      if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_HOOK_URL }}
         DISCORD_AVATAR: https://api.microlink.io/?url=https://twitter.com/github&embed=image.url
         DISCORD_USERNAME: Github
       uses: Ilshidur/action-discord@0.3.2
+      
