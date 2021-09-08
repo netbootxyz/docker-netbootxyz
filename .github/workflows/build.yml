@@ -138,7 +138,7 @@ jobs:
       if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
       run: |
         TEMPLATE='[{"color": $color, "description": $desc}]'
-        DESC='__**Container Updated**__ \n**Container Name:**  $GITHUB_REPOSITORY\n**Version:**  ${{ env.VERSION_TAG }}\n**Build:**  https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\n**Status:**  Success\n**Change:** https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA\n'
+        DESC="__**Container Updated**__ $'\n'**Container Name:**  $GITHUB_REPOSITORY $'\n'**Version:**  ${{ env.VERSION_TAG }}$'\n'**Build:**  https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID$'\n'**Status:**  Success\n**Change:** https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA$'\n'"
         echo "DISCORD_EMBEDS=$(jq -nc --arg color "1681177" --arg desc "$DESC" "$TEMPLATE")" >> $GITHUB_ENV
 
     - name: Discord notification
