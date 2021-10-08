@@ -5,7 +5,9 @@
 
 ## Overview
 
-The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command.  The container is built from Alpine Linux and contains several components:
+The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the  downloadable assets from Github to your location machine for faster booting of assets. 
+
+It's a great tool for developing and testing changes to the menus. The container is built from Alpine Linux and contains several components:
 
 * netboot.xyz [webapp](https://github.com/netbootxyz/webapp)
 * Nginx for hosting local assets from the container
@@ -13,9 +15,11 @@ The netboot.xyz docker image allows you to easily set up a local instance of net
 * syslog for providing tftp activity logs
 
 Services are managed in the container by [supervisord](http://supervisord.org/).
+
 ## Usage
 
 The following snippets are examples of starting up the container. 
+
 ### docker-cli
 
 ```bash
