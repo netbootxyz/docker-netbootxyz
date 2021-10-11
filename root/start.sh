@@ -61,6 +61,12 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
     /config/menus/remote/netboot.xyz-arm64.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64.efi"
   curl -o \
+    /config/menus/remote/netboot.xyz-arm64-snp.efi -sL \
+    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snp.efi"
+  curl -o \
+    /config/menus/remote/netboot.xyz-arm64-snponly.efi -sL \
+    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snponly.efi"
+  curl -o \
     /config/menus/remote/netboot.xyz-arm64.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-rpi4-snp.efi"  
   # layer and cleanup
