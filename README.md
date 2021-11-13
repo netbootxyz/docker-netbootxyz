@@ -107,6 +107,8 @@ These are a few configuration examples for setting up a DHCP server. The main co
 #### isc-dhcp-server
 
 ```
+option arch code 93 = unsigned integer 16;
+
 subnet 10.0.100.0 netmask 255.255.255.0 {
   range 10.0.100.100 10.0.100.200;
   next-server 10.0.100.10;
@@ -117,7 +119,7 @@ subnet 10.0.100.0 netmask 255.255.255.0 {
   option domain-name-servers 1.1.1.1;
   if exists user-class and ( option user-class = "iPXE" ) {
     filename "http://boot.netboot.xyz/menu.ipxe";
-  } elsif option client-architecture = encode-int ( 16, 16 ) {
+  } elsif option arch = encode-int ( 16, 16 ) {
     filename "http://boot.netboot.xyz/ipxe/netboot.xyz.efi";
     option vendor-class-identifier "HTTPClient";
   } elsif option arch = 00:07 {
