@@ -5,7 +5,7 @@
 
 ## Overview
 
-The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets. 
+The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
 
 It is a great tool for developing and testing custom changes to the menus. If you are looking to get started with netboot.xyz and don't want to manage iPXE menus, you should use the boot media instead of setting up a container. The container is built from Alpine Linux and contains several components:
 
@@ -20,7 +20,7 @@ Services are managed in the container by [supervisord](http://supervisord.org/).
 
 The netboot.xyz docker image requires an existing DHCP server to be setup and running in order to boot from it. The image does not contain a DHCP server service. Please see the DHCP configuration setup near the end of this document for ideas on how to enable your environment to talk to the container. In most cases, you will need to specify the next-server and boot file name in the DHCP configuration.
 
-The following snippets are examples of starting up the container. 
+The following snippets are examples of starting up the container.
 
 ### docker-cli
 
@@ -50,24 +50,9 @@ Start the container with the same parameters used above. If the same folders are
 
 ### docker-compose
 
-```yaml
----
-version: "2.1"
-services:
-  netbootxyz:
-    image: ghcr.io/netbootxyz/netbootxyz
-    container_name: netbootxyz
-    environment:
-      - MENU_VERSION=2.0.47 # optional
-    volumes:
-      - /path/to/config:/config # optional
-      - /path/to/assets:/assets # optional
-    ports:
-      - 3000:3000
-      - 69:69/udp
-      - 8080:80 #optional
-    restart: unless-stopped
-```
+1. Copy docker-compose.yml.example to docker-compose.yml
+1. Edit as needed
+1. Run `docker-compose up -d netbootxyz` to start containers in the background
 
 #### Updating the image with docker-compose
 
@@ -128,7 +113,7 @@ subnet 10.0.100.0 netmask 255.255.255.0 {
     filename "netboot.xyz.pxe";
   } else {
     filename "netboot.xyz.kpxe";
-  }          
+  }
 }
 ```
 
