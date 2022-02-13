@@ -31,7 +31,7 @@ RUN \
  groupmod -g 1000 users && \
  useradd -u 911 -U -d /config -s /bin/false nbxyz && \
  usermod -G users nbxyz && \
- mkdir /app \ 
+ mkdir /app \
        /config \
        /defaults && \
  if [ -z ${WEBAPP_VERSION+x} ]; then \
@@ -47,10 +47,11 @@ RUN \
  npm config set unsafe-perm true && \
  npm install --prefix /app
 
+ENV TFTPD_OPTS=''
+
 EXPOSE 3000
 
 COPY root/ /
 
 # default command
 CMD ["sh","/start.sh"]
-
