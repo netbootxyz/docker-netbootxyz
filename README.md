@@ -5,7 +5,7 @@
 
 ## Overview
 
-The netboot.xyz docker image allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
+The [netboot.xyz docker image](https://github.com/netbootxyz/docker-netbootxyz) allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
 
 It is a great tool for developing and testing custom changes to the menus. If you are looking to get started with netboot.xyz and don't want to manage iPXE menus, you should use the boot media instead of setting up a container. The container is built from Alpine Linux and contains several components:
 
@@ -24,22 +24,22 @@ The following snippets are examples of starting up the container.
 
 ### docker-cli
 
-```bash
+```shell
 docker run -d \
   --name=netbootxyz \
-  -e MENU_VERSION=2.0.47 `# optional` \
-  -p 3000:3000 `# sets webapp port` \
-  -p 69:69/udp `# sets tftp port` \
-  -p 8080:80 `# optional` \
-  -v /local/path/to/config:/config `# optional` \
-  -v /local/path/to/assets:/assets `# optional` \
+  -e MENU_VERSION=2.0.47             `# optional` \
+  -p 3000:3000                       `# sets webapp port` \
+  -p 69:69/udp                       `# sets tftp port` \
+  -p 8080:80                         `# optional` \
+  -v /local/path/to/config:/config   `# optional` \
+  -v /local/path/to/assets:/assets   `# optional` \
   --restart unless-stopped \
   ghcr.io/netbootxyz/netbootxyz
 ```
 
 #### Updating the image with docker-cli
 
-```bash
+```shell
 docker pull ghcr.io/netbootxyz/netbootxyz   # pull the latest image down
 docker stop netbootxyz                      # stop the existing container
 docker rm netbootxyz                        # remove the image
@@ -56,16 +56,16 @@ Start the container with the same parameters used above. If the same folders are
 
 #### Updating the image with docker-compose
 
-```bash
+```shell
 docker-compose pull netbootxyz     # pull the latest image down
 docker-compose up -d netbootxyz    # start containers in the background
 ```
 
 ### Accessing the container services
 
-Once the container is started, the netboot.xyz web application can be accessed by the web configuration interface at http://localhost:3000 or via the specified port.
+Once the container is started, the netboot.xyz web application can be accessed by the web configuration interface at `http://localhost:3000` or via the specified port.
 
-Downloaded web assets will be available at http://localhost:8080 or the specified port.  If you have specified the assets volume, the assets will be available at http://localhost:8080.
+Downloaded web assets will be available at `http://localhost:8080` or the specified port.  If you have specified the assets volume, the assets will be available at `http://localhost:8080`.
 
 If you wish to start over from scratch, you can remove the local configuration folders and upon restart of the container, it will load the default configurations.
 
@@ -78,7 +78,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-p 3000` | Web configuration interface. |
 | `-p 69/udp` | TFTP Port. |
 | `-p 80` | NGINX server for hosting assets. |
-| `-e MENU_VERSION=2.0.47` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
+| `-e MENU_VERSION=2.0.56` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
 | `-v /config` | Storage for boot menu files and web application config |
 | `-v /assets` | Storage for netboot.xyz bootable assets (live CDs and other files) |
 
@@ -89,9 +89,10 @@ This image requires the usage of a DHCP server in order to function properly. If
 ### Examples
 
 These are a few configuration examples for setting up a DHCP server. The main configuration you will need to change are next-server and filename/boot-file-name. Next-server tells your client to check for a host running tftp and retrieve a boot file from there. Because the docker image is hosting a tftp server, the boot files are pulled from it and then it will attempt to load the iPXE configs directly from the host. You can then modify and adjust them to your needs. See [booting from TFTP](https://netboot.xyz/docs/booting/tftp/) for more information.
+
 #### isc-dhcp-server
 
-```
+```shell
 option arch code 93 = unsigned integer 16;
 
 subnet 10.0.100.0 netmask 255.255.255.0 {
@@ -117,7 +118,6 @@ subnet 10.0.100.0 netmask 255.255.255.0 {
 }
 ```
 
-#### TODO - Add more examples
 ## netboot.xyz boot file types
 
 The following bootfile names can be set as the boot file in the DHCP configuration. They are baked into the Docker image:
