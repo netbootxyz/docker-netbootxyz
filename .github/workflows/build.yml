@@ -86,7 +86,7 @@ jobs:
     - name: Docker meta
       if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@v4
       with:
         images: netbootxyz/netbootxyz
         labels: |
