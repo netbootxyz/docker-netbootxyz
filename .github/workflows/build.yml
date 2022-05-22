@@ -108,7 +108,7 @@ jobs:
       
     - name: Build and push image
       if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       with:
         push: false
         context: .
