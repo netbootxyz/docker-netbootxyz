@@ -110,8 +110,6 @@ subnet 10.0.100.0 netmask 255.255.255.0 {
     option vendor-class-identifier "HTTPClient";
   } elsif option arch = 00:07 {
     filename "netboot.xyz.efi";
-  } elsif option arch = 00:00 {
-    filename "netboot.xyz.pxe";
   } else {
     filename "netboot.xyz.kpxe";
   }
