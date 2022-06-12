@@ -5,9 +5,11 @@
 
 ## Overview
 
-The [netboot.xyz docker image](https://github.com/netbootxyz/docker-netbootxyz) allows you to easily set up a local instance of netboot.xyz with a single command. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
+The [netboot.xyz docker image](https://github.com/netbootxyz/docker-netbootxyz) allows you to easily set up a local instance of netboot.xyz. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
 
-It is a great tool for developing and testing custom changes to the menus. If you are looking to get started with netboot.xyz and don't want to manage iPXE menus, you should use the boot media instead of setting up a container. The container is built from Alpine Linux and contains several components:
+It is a great tool for developing and testing custom changes to the menus. If you have a machine without an optical drive that cannot boot from USB then having a local netboot server provides a way to install an OS. If you are looking to get started with netboot.xyz and don't want to manage iPXE menus, you should use the boot media instead of setting up a container.
+
+The container is built upon Alpine Linux and contains several components:
 
 * netboot.xyz [webapp](https://github.com/netbootxyz/webapp)
 * Nginx for hosting local assets from the container
@@ -16,9 +18,26 @@ It is a great tool for developing and testing custom changes to the menus. If yo
 
 Services are managed in the container by [supervisord](http://supervisord.org/).
 
+The container runs fine under ARM-based hosts as well as x86-64.
+
 ## Usage
 
-The netboot.xyz docker image requires an existing DHCP server to be setup and running in order to boot from it. The image does not contain a DHCP server service. Please see the DHCP configuration setup near the end of this document for ideas on how to enable your environment to talk to the container. In most cases, you will need to specify the next-server and boot file name in the DHCP configuration.
+The netboot.xyz docker image requires an existing DHCP server to be setup and running in order to boot from it. The image does not contain a DHCP server service. Please see the DHCP configuration setup near the end of this document for ideas on how to enable your environment to talk to the container. In most cases, you will need to specify the next-server and boot file name in the DHCP configuration. Your DHCP server will need to be assigned a static IP.
+
+### Installing docker
+
+To install docker under Debian and Ubuntu run:
+
+```shell
+sudo apt install docker.io
+```
+
+### Download the docker image
+
+```shell
+docker pull ghcr.io/netbootxyz/netbootxyz
+```
+
 
 The following snippets are examples of starting up the container.
 
@@ -84,24 +103,39 @@ Container images are configured using parameters passed at runtime (such as thos
 
 ## DHCP Configurations
 
-This image requires the usage of a DHCP server in order to function properly. If you have an existing DHCP server, usually you will need to make some small adjustments to make your DHCP server forward requests to the netboot.xyz container. You will need to typically set your next-server and boot-file-name parameters in the DHCP configuration. This tells DHCP to forward requests to the TFTP server and then select a boot file from the TFTP server.
+This image requires the usage of a DHCP server in order to function properly. If you have an existing DHCP server, usually you will need to make some small adjustments to make your DHCP server forward requests to the netboot.xyz container. You will need to typically set your `next-server` and `boot-file-name` parameters in the DHCP configuration. This tells DHCP to forward requests to the TFTP server and then select a boot file from the TFTP server.
 
 ### Examples
 
-These are a few configuration examples for setting up a DHCP server. The main configuration you will need to change are next-server and filename/boot-file-name. Next-server tells your client to check for a host running tftp and retrieve a boot file from there. Because the docker image is hosting a tftp server, the boot files are pulled from it and then it will attempt to load the iPXE configs directly from the host. You can then modify and adjust them to your needs. See [booting from TFTP](https://netboot.xyz/docs/booting/tftp/) for more information.
+These are a few configuration examples for setting up a DHCP server. The main configuration you will need to change are `next-server` and `filename/boot-file-name`. `Next-server` tells your client to check for a host running tftp and retrieve a boot file from there. Because the docker image is hosting a tftp server, the boot files are pulled from it and then it will attempt to load the iPXE configs directly from the host. You can then modify and adjust them to your needs. See [booting from TFTP](https://netboot.xyz/docs/booting/tftp/) for more information.
 
 #### isc-dhcp-server
+
+To install the DHCP server under Debian and Ubuntu run:
+
+```shell
+sudo apt install isc-dhcp-server
+```
+
+You must edit two files to configure `isc-dhcp-server`. Edit `/etc/default/isc-dhcp-server` and configure at least one of the INTERFACES variables with the name of the interface you want to run the DHCP server on:
+
+```shell
+INTERFACESv4="eth0"
+```
+
+You'll also need a `/etc/dhcp/dhcpd.conf` looking something like this:
+
 
 ```shell
 option arch code 93 = unsigned integer 16;
 
-subnet 10.0.100.0 netmask 255.255.255.0 {
-  range 10.0.100.100 10.0.100.200;
-  next-server 10.0.100.10;
+subnet 192.168.0.0 netmask 255.255.255.0 {
+  range 192.168.0.34 192.168.0.254;       # Change this range as appropriate for your network
+  next-server 192.168.0.33;               # Change this to the address of your DHCP server
   option subnet-mask 255.255.255.0;
-  option routers 10.0.100.1;
-  option broadcast-address 10.0.100.255;
-  option domain-name "mynetwork.lan";
+  option routers 192.168.0.1;             # Change this to the address of your router
+  option broadcast-address 192.168.0.255;
+  option domain-name "mynetwork.lan";     # This is optional
   option domain-name-servers 1.1.1.1;
   if exists user-class and ( option user-class = "iPXE" ) {
     filename "http://boot.netboot.xyz/menu.ipxe";
@@ -114,6 +148,18 @@ subnet 10.0.100.0 netmask 255.255.255.0 {
     filename "netboot.xyz.kpxe";
   }
 }
+```
+
+Now you can try starting the DHCP server:
+
+```shell
+sudo systemctl start isc-dhcp-server
+```
+
+To make the dhcp server start automatically on boot:
+
+```shell
+sudo systemctl enable isc-dhcp-server
 ```
 
 ## netboot.xyz boot file types
