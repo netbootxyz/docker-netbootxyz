@@ -1,7 +1,8 @@
 # docker-netbootxyz
 
-[![Build Status](https://github.com/netbootxyz/docker-netbootxyz/workflows/build/badge.svg)](https://github.com/netbootxyz/docker-netbootxyz/actions?query=workflow%3Abuild)
+[![Release Status](https://github.com/netbootxyz/docker-netbootxyz/actions/workflows/release.yml/badge.svg)](https://github.com/netbootxyz/docker-netbootxyz/actions/workflows/release.yml)
 [![Discord](https://img.shields.io/discord/425186187368595466)](https://discord.gg/An6PA2a)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/netbootxyz/docker-netbootxyz)
 
 ## Overview
 
