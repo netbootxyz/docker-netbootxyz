@@ -91,9 +91,9 @@ Downloaded web assets will be available at `http://localhost:8080` or the specif
 
 If you wish to start over from scratch, you can remove the local configuration folders and upon restart of the container, it will load the default configurations.
 
-### Local Mirror Acces
+### Local Mirror Access
 
-If you want to pull the Live Images images down from your own mirror, modify the boot.cfg file and override the default `live_endpoint` setting from `https://github.com/netbootxyz` and set it to your deployment IP or domain, e.g. `http://192.168.0.50:8080`. It will then redirect asset download to the local location you set for assets on port 8080 and you can download the assets by using the local assets menu down to your local server. This can result in a much faster boot and load time.
+If you want to pull the Live Images images down from your own mirror, modify the boot.cfg file and override the default `live_endpoint` setting from `https://github.com/netbootxyz` and set it to your deployment IP or domain, e.g. `http://192.168.0.50:8080`. It will then redirect asset download to the local location you set for assets on port `8080` and you can download the assets by using the local assets menu down to your local server. This can result in a much faster boot and load time.
 
 ## Parameters
 
