@@ -4,6 +4,8 @@
 [![Discord](https://img.shields.io/discord/425186187368595466)](https://discord.gg/An6PA2a)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/netbootxyz/docker-netbootxyz)
 
+![netboot.xyz webapp](https://netboot.xyz/images/netboot.xyz-webapp.jpg)
+
 ## Overview
 
 The [netboot.xyz docker image](https://github.com/netbootxyz/docker-netbootxyz) allows you to easily set up a local instance of netboot.xyz. The container is a small helper application written in node.js. It provides a simple web interface for editing menus on the fly, retrieving the latest menu release of netboot.xyz, and enables mirroring the downloadable assets from Github to your location machine for faster booting of assets.
@@ -88,6 +90,10 @@ Once the container is started, the netboot.xyz web application can be accessed b
 Downloaded web assets will be available at `http://localhost:8080` or the specified port.  If you have specified the assets volume, the assets will be available at `http://localhost:8080`.
 
 If you wish to start over from scratch, you can remove the local configuration folders and upon restart of the container, it will load the default configurations.
+
+### Local Mirror Acces
+
+If you want to pull the Live Images images down from your own mirror, modify the boot.cfg file and override the default `live_endpoint` setting from `https://github.com/netbootxyz` and set it to your deployment IP or domain, e.g. `http://192.168.0.50:8080`. It will then redirect asset download to the local location you set for assets on port 8080 and you can download the assets by using the local assets menu down to your local server. This can result in a much faster boot and load time.
 
 ## Parameters
 
