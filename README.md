@@ -49,7 +49,7 @@ The following snippets are examples of starting up the container.
 ```shell
 docker run -d \
   --name=netbootxyz \
-  -e MENU_VERSION=2.0.47             `# optional` \
+  -e MENU_VERSION=2.0.59             `# optional` \
   -p 3000:3000                       `# sets webapp port` \
   -p 69:69/udp                       `# sets tftp port` \
   -p 8080:80                         `# optional` \
