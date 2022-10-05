@@ -37,10 +37,17 @@ sudo apt install docker.io
 
 ### Download the docker image
 
+#### From Github Container Registry
+
 ```shell
 docker pull ghcr.io/netbootxyz/netbootxyz
 ```
 
+#### From Docker Hub
+
+```shell
+docker pull netbootxyz/netbootxyz
+```
 
 The following snippets are examples of starting up the container.
 
