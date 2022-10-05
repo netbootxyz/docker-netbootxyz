@@ -30,6 +30,12 @@ jobs:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
  
+     - name: Login to the Docker Container Registry
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     - name: Login to the GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -119,6 +125,9 @@ jobs:
          VERSION=${{ env.VERSION_TAG }}
          BUILD_DATE=${{ env.GITHUB_DATE }}
         tags: |
+          netbootxyz/netbootxyz:latest
+          netbootxyz/netbootxyz:${{ github.sha }}
+          netbootxyz/netbootxyz:${{ env.VERSION_TAG }}
           ghcr.io/netbootxyz/netbootxyz:latest
           ghcr.io/netbootxyz/netbootxyz:${{ github.sha }}
           ghcr.io/netbootxyz/netbootxyz:${{ env.VERSION_TAG }}
