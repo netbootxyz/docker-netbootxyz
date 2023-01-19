@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo Building local core environment image...
+docker build -t docker-netbootxyz .
+echo Entering docker-netbootxyz shell... type exit to leave container...
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/shell -t -i docker-netbootxyz /bin/bash
