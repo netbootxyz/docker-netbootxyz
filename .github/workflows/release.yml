@@ -58,7 +58,7 @@ jobs:
         MULTIDIGEST=$(curl -s \
             --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
             --header "Authorization: Bearer ${TOKEN}" \
-            "https://ghcr.io/v2/${IMAGE}/manifests/${tag}" \
+            "https://ghcr.io/v2/${IMAGE}/manifests/${TAG}" \
             | jq -r 'first(.manifests[].digest)')
         DIGEST=$(curl -s \
             --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
