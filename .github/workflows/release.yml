@@ -145,4 +145,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CUSTOM_TAG: ${{ env.VERSION_TAG }}
         WITH_V: true
+        INITIAL_VERSION: 0.6.7-nbxyz30
         RELEASE_BRANCHES: master
