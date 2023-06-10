@@ -143,6 +143,6 @@ jobs:
       uses: anothrNick/github-tag-action@1.61.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CUSTOM_TAG: 0.6.7-nbxyz31
+        CUSTOM_TAG: ${{ env.VERSION_TAG }}
         WITH_V: true
         RELEASE_BRANCHES: master
