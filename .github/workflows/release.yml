@@ -53,7 +53,7 @@ jobs:
             | jq -r '.token')
         TAG=$(curl -s --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
            --header "Authorization: Bearer ${TOKEN}" \
-           "https://ghcr.io/v2/${IMAGE}/tags/list?n=1000" \
+           "https://ghcr.io/v2/${IMAGE}/tags/list\?n\=1000" \
            | jq -r '.tags[-1]')
         MULTIDIGEST=$(curl -s \
             --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
