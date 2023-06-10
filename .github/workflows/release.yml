@@ -57,12 +57,12 @@ jobs:
            | jq -r '.tags[-1]')
         echo LATEST_TAG: $TAG
         MULTIDIGEST=$(curl -s \
-            --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            --header "Accept: application/vnd.oci.image.index.v1+json" \
             --header "Authorization: Bearer ${TOKEN}" \
             "https://ghcr.io/v2/${IMAGE}/manifests/${TAG}" \
             | jq -r 'first(.manifests[].digest)')
         DIGEST=$(curl -s \
-            --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            --header "Accept: application/vnd.oci.image.manifest.v1+json" \
             --header "Authorization: Bearer ${TOKEN}" \
             "https://ghcr.io/v2/${IMAGE}/manifests/${MULTIDIGEST}" \
             | jq -r '.config.digest')
