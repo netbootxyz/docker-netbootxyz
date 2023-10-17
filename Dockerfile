@@ -8,6 +8,7 @@ LABEL build_version="netboot.xyz version: ${VERSION} Build-date: ${BUILD_DATE}"
 LABEL maintainer="antonym"
 
 RUN \
+ apk upgrade --no-cache && \
  apk add --no-cache --virtual=build-dependencies \
         nodejs npm && \
  echo "**** install runtime packages ****" && \
