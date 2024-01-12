@@ -14,6 +14,7 @@ RUN \
    bash \
    busybox \
    curl \
+   envsubst \
    git \
    jq \
    nghttp2-dev \
@@ -46,6 +47,7 @@ RUN \
  rm -rf /tmp/*
 
 ENV TFTPD_OPTS=''
+ENV NGINX_PORT='80'
 
 EXPOSE 3000
 

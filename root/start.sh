@@ -13,8 +13,8 @@ mkdir -p \
 [[ ! -f /config/nginx/nginx.conf ]] && \
   cp /defaults/nginx.conf /config/nginx/nginx.conf
 [[ ! -f /config/nginx/site-confs/default ]] && \
-  cp /defaults/default /config/nginx/site-confs/default
-  
+  envsubst < /defaults/default > /config/nginx/site-confs/default
+
 # Ownership
 chown -R nbxyz:nbxyz /assets
 chown -R nbxyz:nbxyz /var/lib/nginx
@@ -27,7 +27,7 @@ mkdir -p \
 
 # download menus if not found
 if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
-  if [[ -z ${MENU_VERSION+x} ]]; then \
+  if [[ -z ${MENU_VERSION+x} ]]; then \ 
     MENU_VERSION=$(curl -sL "https://api.github.com/repos/netbootxyz/netboot.xyz/releases/latest" | jq -r '.tag_name')
   fi
   echo "[netbootxyz-init] Downloading netboot.xyz at ${MENU_VERSION}"

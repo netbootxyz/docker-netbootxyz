@@ -57,9 +57,10 @@ The following snippets are examples of starting up the container.
 docker run -d \
   --name=netbootxyz \
   -e MENU_VERSION=2.0.59             `# optional` \
+  -e NGINX_PORT=80                   `# optional` \
   -p 3000:3000                       `# sets webapp port` \
   -p 69:69/udp                       `# sets tftp port` \
-  -p 8080:80                         `# optional` \
+  -p 8080:80                         `# optional, destination should match ${NGINX_PORT} variable above.` \
   -v /local/path/to/config:/config   `# optional` \
   -v /local/path/to/assets:/assets   `# optional` \
   --restart unless-stopped \
@@ -138,7 +139,6 @@ INTERFACESv4="eth0"
 ```
 
 You'll also need a `/etc/dhcp/dhcpd.conf` looking something like this:
-
 
 ```shell
 option arch code 93 = unsigned integer 16;

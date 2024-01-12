@@ -1,5 +1,5 @@
 server {
-	listen 80;
+	listen ${NGINX_PORT};
 	location / {
 		root /assets;
 		autoindex on;
