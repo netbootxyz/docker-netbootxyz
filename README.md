@@ -56,7 +56,7 @@ The following snippets are examples of starting up the container.
 ```shell
 docker run -d \
   --name=netbootxyz \
-  -e MENU_VERSION=2.0.59             `# optional` \
+  -e MENU_VERSION=2.0.76             `# optional` \
   -e NGINX_PORT=80                   `# optional` \
   -p 3000:3000                       `# sets webapp port` \
   -p 69:69/udp                       `# sets tftp port` \
@@ -112,7 +112,8 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-p 3000` | Web configuration interface. |
 | `-p 69/udp` | TFTP Port. |
 | `-p 80` | NGINX server for hosting assets. |
-| `-e MENU_VERSION=2.0.56` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
+| `-e NGINX_PORT=80` | Specify a different port for NGINX service to listen on. |
+| `-e MENU_VERSION=2.0.76` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
 | `-v /config` | Storage for boot menu files and web application config |
 | `-v /assets` | Storage for netboot.xyz bootable assets (live CDs and other files) |
 
