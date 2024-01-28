@@ -25,7 +25,7 @@ RUN \
    supervisor \
    syslog-ng \
    tar \
-   tftp-hpa && \
+   dnsmasq && \
  apk add --no-cache --virtual=build-dependencies \
    npm && \
  groupmod -g 1000 users && \
