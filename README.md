@@ -58,7 +58,8 @@ docker run -d \
   --name=netbootxyz \
   -e MENU_VERSION=2.0.76             `# optional` \
   -e NGINX_PORT=80                   `# optional` \
-  -p 3000:3000                       `# sets webapp port` \
+  -e WEB_APP_PORT=3000               `# optional` \
+  -p 3000:3000                       `# sets web configuration interface port, destination should match ${WEB_APP_PORT} variable above.` \
   -p 69:69/udp                       `# sets tftp port` \
   -p 8080:80                         `# optional, destination should match ${NGINX_PORT} variable above.` \
   -v /local/path/to/config:/config   `# optional` \
@@ -112,6 +113,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-p 3000` | Web configuration interface. |
 | `-p 69/udp` | TFTP Port. |
 | `-p 80` | NGINX server for hosting assets. |
+| `-e WEB_APP_PORT=3000` | Specify a different port for the web configuration interface to listen on. |
 | `-e NGINX_PORT=80` | Specify a different port for NGINX service to listen on. |
 | `-e MENU_VERSION=2.0.76` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
 | `-v /config` | Storage for boot menu files and web application config |

@@ -7,11 +7,12 @@ services:
     environment:
       - MENU_VERSION=2.0.47 # optional
       - NGINX_PORT=80 # optional
+      - WEB_APP_PORT=3000 # optional
     volumes:
       - /path/to/config:/config # optional
       - /path/to/assets:/assets # optional
     ports:
-      - 3000:3000
+      - 3000:3000  # optional, destination should match ${WEB_APP_PORT} variable above.
       - 69:69/udp
-      - 8080:80 # optional, destination should match ${NGINX_PORT} variable above.
+      - 8080:80  # optional, destination should match ${NGINX_PORT} variable above.
     restart: unless-stopped
