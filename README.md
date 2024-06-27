@@ -83,13 +83,13 @@ Start the container with the same parameters used above. If the same folders are
 
 1. Copy [docker-compose.yml.example](https://github.com/netbootxyz/docker-netbootxyz/blob/master/docker-compose.yml.example) to docker-compose.yml
 1. Edit as needed
-1. Run `docker-compose up -d netbootxyz` to start containers in the background
+1. Run `docker compose up -d netbootxyz` to start containers in the background
 
-#### Updating the image with docker-compose
+#### Updating the image with docker compose
 
 ```shell
-docker-compose pull netbootxyz     # pull the latest image down
-docker-compose up -d netbootxyz    # start containers in the background
+docker compose pull netbootxyz     # pull the latest image down
+docker compose up -d netbootxyz    # start containers in the background
 ```
 
 ### Accessing the container services
