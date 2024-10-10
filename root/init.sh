@@ -16,9 +16,20 @@ mkdir -p \
 [[ ! -f /config/nginx/site-confs/default ]] &&
   envsubst </defaults/default >/config/nginx/site-confs/default
 
-# create dnsmasq config
+# create dnsmasq config, and conditionally add DHCP proxy support
 if [[ ! -f /config/dnsmasq/dnsmasq.conf ]]; then
   cp /defaults/dnsmasq.conf /config/dnsmasq/dnsmasq.conf
+
+  if [ -n "${DHCP_RANGE_START}" ]; then
+    echo "[netbootxyz-init] Enabling DHCP Proxy mode for DHCP_RANGE_START=${DHCP_RANGE_START}"
+
+    # Get the container's IP address using hostname if not already set
+    if [ -z "${CONTAINER_IP}" ]; then
+      CONTAINER_IP=$(hostname -i)
+      export CONTAINER_IP
+    fi
+    envsubst </defaults/dnsmasq-dhcpproxy.conf >>/config/dnsmasq/dnsmasq.conf
+  fi
 fi
 
 # Ownership
