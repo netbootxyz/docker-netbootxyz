@@ -5,15 +5,21 @@ mkdir -p \
   /assets \
   /config/nginx/site-confs \
   /config/log/nginx \
+  /config/dnsmasq \
   /run \
   /var/lib/nginx/tmp/client_body \
   /var/tmp/nginx
 
 # copy config files
-[[ ! -f /config/nginx/nginx.conf ]] && \
+[[ ! -f /config/nginx/nginx.conf ]] &&
   cp /defaults/nginx.conf /config/nginx/nginx.conf
-[[ ! -f /config/nginx/site-confs/default ]] && \
-  envsubst < /defaults/default > /config/nginx/site-confs/default
+[[ ! -f /config/nginx/site-confs/default ]] &&
+  envsubst </defaults/default >/config/nginx/site-confs/default
+
+# create dnsmasq config
+if [[ ! -f /config/dnsmasq/dnsmasq.conf ]]; then
+  cp /defaults/dnsmasq.conf /config/dnsmasq/dnsmasq.conf
+fi
 
 # Ownership
 chown -R nbxyz:nbxyz /assets
@@ -67,7 +73,7 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
     /config/menus/remote/netboot.xyz-arm64-snponly.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snponly.efi"
   # layer and cleanup
-  echo -n "${MENU_VERSION}" > /config/menuversion.txt
+  echo -n "${MENU_VERSION}" >/config/menuversion.txt
   cp -r /config/menus/remote/* /config/menus
   rm -f /tmp/menus.tar.gz
 fi
