@@ -123,7 +123,7 @@ jobs:
         push: true
         context: .
         file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
+        platforms: linux/amd64,linux/arm64
         build-args: |
          WEBAPP_VERSION=${{ env.WEBAPP_RELEASE }} 
          VERSION=${{ env.VERSION_TAG }}
