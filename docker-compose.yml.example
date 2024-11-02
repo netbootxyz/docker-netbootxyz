@@ -8,7 +8,7 @@ services:
       - MENU_VERSION=2.0.47 # optional
       - NGINX_PORT=80 # optional
       - WEB_APP_PORT=3000 # optional
-      - DHCP_RANGE_START=192.168.0.1 # optional, enables DHCP Proxy mode. set to your network's DHCP range first IP
+      - DHCP_RANGE_START=192.168.0.1  # optional, enables DHCP Proxy mode. set to your network's DHCP range first IP.
     volumes:
       - /path/to/config:/config # optional
       - /path/to/assets:/assets # optional
@@ -17,3 +17,6 @@ services:
       - 69:69/udp
       - 8080:80  # optional, destination should match ${NGINX_PORT} variable above.
     restart: unless-stopped
+    # cap_add:
+    #   - NET_ADMIN  # required for DHCP Proxy mode.
+    # network_mode: host  # required for DHCP Proxy mode - network mode host, (or ipvlan/macvlan or a bridge).
