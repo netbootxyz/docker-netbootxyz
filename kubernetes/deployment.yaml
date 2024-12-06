@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pxe-bootserver-ds
+  namespace: network
+spec:
+  selector:
+    matchLabels:
+      app: pxe-bootserver
+  replicas: 1
+  strategy:
+    #This is not the default
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pxe-bootserver
+    spec:
+      #securityContext:
+        #runAsUser: 1001
+        #runAsGroup: 1000
+      containers:
+      - name: pxe-bootserver
+        image: ghcr.io/netbootxyz/netbootxyz
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: MENU_VERSION
+            value: "2.0.47"
+          - name: NGINX_PORT
+            value: "80"
+          - name: WEB_APP_PORT
+            value: "3000"
+        ports:
+        - name: tftp
+          containerPort: 69
+          protocol: UDP
+        - name: nginx-port
+          containerPort: 80
+        - name: web-app-port
+          containerPort: 3000
+        volumeMounts:
+        - name: pxe-bootserver-conf
+          mountPath: /etc/supervisor.conf
+          subPath: supervisor.conf
+        - name: pxe-bootserver-conf
+          mountPath: /etc/nginx.conf
+          subPath: nginx.conf
+        - name: pxe-bootserver-conf
+          mountPath: /config/nginx/nginx.conf
+          subPath: nginx.conf
+        - mountPath: /config/
+          name: config-store
+        - mountPath: /assets/
+          name: data-store
+        - mountPath: /tmp/
+          name: tmp-store
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            drop:
+            - ALL
+          privileged: true
+          readOnlyRootFilesystem: true
+          runAsNonRoot: false
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext:
+        capabilities:
+          add: ["CHOWN"]
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: pxebootserver-sa
+      serviceAccountName: pxebootserver-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          name: pxe-bootserver-conf
+          items:
+          - key: supervisor.conf
+            path: supervisor.conf
+          - key: nginx.conf
+            path: nginx.conf
+        name: pxe-bootserver-conf
+      - name: config-store
+        persistentVolumeClaim:
+          claimName: pxe-bootserver-config-pvc
+      - name: data-store
+        persistentVolumeClaim:
+          claimName: pxe-bootserver-data-pvc
+      - name: tmp-store
+        emptyDir: {}
