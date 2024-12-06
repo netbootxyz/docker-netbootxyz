@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pxe-bootserver-route
+  namespace: network
+spec:
+  host: pxeboot.apps.cluster.local
+  port:
+    targetPort: 3000
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: svc-pxe-bootserver
+    weight: 100
+  wildcardPolicy: None
