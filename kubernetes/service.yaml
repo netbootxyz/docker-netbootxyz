@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+  name: svc-pxe-bootserver
+  namespace: network
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: nginx-port
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: http-admin-port
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  - name: tftp-port
+    port: 69
+    protocol: UDP
+    targetPort: 69
+  selector:
+    app: pxe-bootserver
+  sessionAffinity: ClientIP
+  type: ClusterIP
