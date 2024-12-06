@@ -17,7 +17,7 @@ spec:
         app: pxe-bootserver
     spec:
       #securityContext:
-        #runAsUser: 1001
+        #runAsUser: 1011
         #runAsGroup: 1000
       containers:
       - name: pxe-bootserver
