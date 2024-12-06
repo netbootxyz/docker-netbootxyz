@@ -55,7 +55,6 @@ route.route.openshift.io/pxe-bootserver-route         pxeboot.apps.cluster.local
 ```
 kubectl -n pxeboot logs pxe-bootserver-ds-5559fd7-4ncjb
 
-chown: /config/nginx/nginx.conf: Read-only file system
             _   _                 _
  _ __   ___| |_| |__   ___   ___ | |_  __  ___   _ ____
 | '_ \ / _ \ __| '_ \ / _ \ / _ \| __| \ \/ / | | |_  /
@@ -88,4 +87,9 @@ chown: /config/nginx/nginx.conf: Read-only file system
 2024-12-03 16:40:40,950 INFO gave up: messages-log entered FATAL state, too many start retries too quickly
 2024-12-03 16:40:40,981 WARN exited: syslog-ng (exit status 2; not expected)
 2024-12-03 16:40:41,983 INFO gave up: syslog-ng entered FATAL state, too many start retries too quickly
+```
+In the current version we have 2 bugs, which have no impact for the netboot.xyz server.
+```
+syslog-ng       must be reconfigured or have to be removed
+messages-log    must be reconfigured or have to be removed
 ```
