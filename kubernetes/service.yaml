@@ -5,7 +5,9 @@ metadata:
   name: svc-pxe-bootserver
   namespace: network
 spec:
-  internalTrafficPolicy: Cluster
+  externalTrafficPolicy: Local
+  internalTrafficPolicy: Local
+  #internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -22,6 +24,66 @@ spec:
     port: 69
     protocol: UDP
     targetPort: 69
+  - name: tftp-port-1025
+    port: 1025
+    protocol: UDP
+    targetPort: 1025
+  - name: tftp-port-1026
+    port: 1026
+    protocol: UDP
+    targetPort: 1026
+  - name: tftp-port-1027
+    port: 1027
+    protocol: UDP
+    targetPort: 1027
+  - name: tftp-port-1028
+    port: 1028
+    protocol: UDP
+    targetPort: 1028
+  - name: tftp-port-1029
+    port: 1029
+    protocol: UDP
+    targetPort: 1029
+  - name: tftp-port-1030
+    port: 1030
+    protocol: UDP
+    targetPort: 1030
+  - name: tftp-port-1031
+    port: 1031
+    protocol: UDP
+    targetPort: 1031
+  - name: tftp-port-1032
+    port: 1032
+    protocol: UDP
+    targetPort: 1032
+  - name: tftp-port-1033
+    port: 1033
+    protocol: UDP
+    targetPort: 1033
+  - name: tftp-port-1034
+    port: 1034
+    protocol: UDP
+    targetPort: 1034
+  - name: tftp-port-1035
+    port: 1035
+    protocol: UDP
+    targetPort: 1035
+  - name: tftp-port-1036
+    port: 1036
+    protocol: UDP
+    targetPort: 1036
+  - name: tftp-port-1037
+    port: 1037
+    protocol: UDP
+    targetPort: 1037
+  - name: tftp-port-1038
+    port: 1038
+    protocol: UDP
+    targetPort: 1038
+  - name: tftp-port-1039
+    port: 1039
+    protocol: UDP
+    targetPort: 1039
   selector:
     app: pxe-bootserver
   sessionAffinity: ClientIP
