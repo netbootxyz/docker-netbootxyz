@@ -1,11 +1,14 @@
 # Kubernetes Deployment example
+
 This is an example of one possibilty how to deploy netboot.xyz to a OKD/OpenShift cluster.
 You can also use it for a Kubernetes cluster, but in this case you will add your ingress configuration instead of the route.
 
 ## Edit PVC config
+
 First edit both pvc (pvc.yaml and pvc-config.yaml) configs, so that they reference your storage-class.
 
 ## Edit Route config (for OKD/OpenShift)
+
 Edit the host to your needs.
 ```
 spec:
@@ -13,14 +16,19 @@ spec:
 ```
 
 ## Optional edit PXE-Bootserver-Conf
+
 Optionaly you can edit the pxe-bootserver-conf.yaml for your needs.
 
 ## Deploy to Kubernetes or OKD/OpenShift
+
 ### create a namespace
+
 ```
 kubectl create ns pxeboot
 ```
+
 ### deploy
+
 ```
 kubectl -n pxeboot apply -f pvc.yaml
 kubectl -n pxeboot apply -f pvc-config.yaml
@@ -32,7 +40,9 @@ kubectl -n pxeboot apply -f service.yaml
 ```
 
 ## Check if netboot.xyz is running
+
 ### Check Deployment, Service and Pod
+
 ```
 kubectl -n pxeboot get all
 
@@ -51,7 +61,9 @@ replicaset.apps/pxe-bootserver-ds-5559fd7         1         1         1       2d
 NAME                                                  HOST/PORT                           PATH   SERVICES                   PORT    TERMINATION   WILDCARD
 route.route.openshift.io/pxe-bootserver-route         pxeboot.apps.cluster.local                 svc-pxe-bootserver         3000    edge          None
 ```
+
 ### Check the logs of the Pod
+
 ```
 kubectl -n pxeboot logs pxe-bootserver-ds-5559fd7-4ncjb
 
@@ -93,3 +105,11 @@ In the current version we have 2 bugs, which have no impact for the netboot.xyz 
 syslog-ng       must be reconfigured or have to be removed
 messages-log    must be reconfigured or have to be removed
 ```
+
+## DHCP-Options for TFTP
+
+This deployment will need the following DHCP-Options:
+- Option 66 Boot Server Hostname: tftp.svc-pxeboot.namespace.cluster.local
+- Option 67 Bootfile Name:        netboot.xyz.efi            (for UEFI-Boot)
+- Option 67 Bootfile Name:        netboot.xyz-undionly.kpxe  (for BIOS-Boot)
+
