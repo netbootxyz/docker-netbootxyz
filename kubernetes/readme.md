@@ -49,8 +49,9 @@ kubectl -n network get all
 NAME                                        READY   STATUS    RESTARTS   AGE
 pod/pxe-bootserver-ds-5559fd7-4ncjb         1/1     Running   0          2d23h
 
-NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                  AGE
-service/svc-pxe-bootserver         ClusterIP   172.30.255.66    <none>        80/TCP,3000/TCP,69/UDP   11d
+NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)           AGE
+service/svc-pxe-bootserver         ClusterIP   10.20.255.66     <none>        80/TCP,3000/TCP   15d
+service/svc-pxeboot                NodePort    10.20.255.51     <none>        69:30936/UDP      15d
 
 NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/pxe-bootserver-ds      1/1     1            1           3d7h
