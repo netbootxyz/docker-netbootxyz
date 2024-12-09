@@ -19,6 +19,8 @@ spec:
       #securityContext:
         #runAsUser: 1011
         #runAsGroup: 1000
+      hostname: tftp
+      subdomain: svc-pxeboot
       containers:
       - name: pxe-bootserver
         image: ghcr.io/netbootxyz/netbootxyz
