@@ -1,7 +1,10 @@
 # Kubernetes Deployment example
 
 This is an example of one possibilty how to deploy netboot.xyz to a OKD/OpenShift cluster.  
-You can also use it for a Kubernetes cluster, but in this case you will add your ingress configuration instead of the route.
+You can also use it for a Kubernetes cluster, but in this case you will add your ingress configuration instead of the route.  
+In this example we use:  
+  cluster.local   as the kubernetes cluster domain.  
+  Please change it to your needs.
 
 ## Edit PVC config
 
