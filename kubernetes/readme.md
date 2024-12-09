@@ -46,8 +46,10 @@ Please notice the service configuration for the service:
 this is from **type: NodePort**.  
 This is important, because after a TFTP-client requests a file,  
 the TFTP-Server will initiate a new connection and send data back to the client over this new connection.  
-So you must configure your **CNI** **do not** use source nat (**SNAT**) for this connections !  
-CNI configs:
+So you must configure your **CNI** **do not** use source nat (**SNAT**) for this connections !
+
+#### CNI configs:
+
 - calico [SNAT-Config](https://docs.tigera.io/calico/latest/networking/configuring/workloads-outside-cluster)
 - cilium [SNAT-Config](https://docs.cilium.io/en/stable/network/concepts/masquerading/)
 
