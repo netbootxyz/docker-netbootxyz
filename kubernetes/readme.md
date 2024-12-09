@@ -24,19 +24,19 @@ Optionaly you can edit the pxe-bootserver-conf.yaml for your needs.
 ### create a namespace
 
 ```
-kubectl create ns pxeboot
+kubectl create ns network
 ```
 
 ### deploy
 
 ```
-kubectl -n pxeboot apply -f pvc.yaml
-kubectl -n pxeboot apply -f pvc-config.yaml
-kubectl -n pxeboot apply -f pxe-bootserver-conf.yaml
-kubectl -n pxeboot apply -f serviceaccount.yaml
-kubectl -n pxeboot apply -f deployment.yaml
-kubectl -n pxeboot apply -f route.yaml
-kubectl -n pxeboot apply -f service.yaml
+kubectl -n network apply -f pvc.yaml
+kubectl -n network apply -f pvc-config.yaml
+kubectl -n network apply -f pxe-bootserver-conf.yaml
+kubectl -n network apply -f serviceaccount.yaml
+kubectl -n network apply -f deployment.yaml
+kubectl -n network apply -f route.yaml
+kubectl -n network apply -f service.yaml
 ```
 
 ## Check if netboot.xyz is running
@@ -44,7 +44,7 @@ kubectl -n pxeboot apply -f service.yaml
 ### Check Deployment, Service and Pod
 
 ```
-kubectl -n pxeboot get all
+kubectl -n network get all
 
 NAME                                        READY   STATUS    RESTARTS   AGE
 pod/pxe-bootserver-ds-5559fd7-4ncjb         1/1     Running   0          2d23h
@@ -65,7 +65,7 @@ route.route.openshift.io/pxe-bootserver-route         pxeboot.apps.cluster.local
 ### Check the logs of the Pod
 
 ```
-kubectl -n pxeboot logs pxe-bootserver-ds-5559fd7-4ncjb
+kubectl -n network logs pxe-bootserver-ds-5559fd7-4ncjb
 
             _   _                 _
  _ __   ___| |_| |__   ___   ___ | |_  __  ___   _ ____
@@ -109,7 +109,7 @@ messages-log    must be reconfigured or have to be removed
 ## DHCP-Options for TFTP
 
 This deployment will need the following DHCP-Options:
-- Option 66 Boot Server Hostname: tftp.svc-pxeboot.namespace.cluster.local
+- Option 66 Boot Server Hostname: tftp.svc-pxeboot.network.cluster.local
 - Option 67 Bootfile Name:        netboot.xyz.efi            (for UEFI-Boot)
 - Option 67 Bootfile Name:        netboot.xyz-undionly.kpxe  (for BIOS-Boot)
 
