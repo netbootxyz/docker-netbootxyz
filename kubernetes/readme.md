@@ -1,6 +1,6 @@
 # Kubernetes Deployment example
 
-This is an example of one possibilty how to deploy netboot.xyz to a OKD/OpenShift cluster.
+This is an example of one possibilty how to deploy netboot.xyz to a OKD/OpenShift cluster.  
 You can also use it for a Kubernetes cluster, but in this case you will add your ingress configuration instead of the route.
 
 ## Edit PVC config
@@ -43,10 +43,10 @@ kubectl -n network apply -f service.yaml
 
 Please notice the service configuration for the service:
 - svc-pxboot
-this is from **type: NodePort**.
-This is important, because after a TFTP-client requests a file,
-the TFTP-Server will initiate a new connection and send data back to the client over this new connection.
-So you must configure your **CNI** to **not** use source nat (**SNAT**) for this connections !
+this is from **type: NodePort**.  
+This is important, because after a TFTP-client requests a file,  
+the TFTP-Server will initiate a new connection and send data back to the client over this new connection.  
+So you must configure your **CNI** to **not** use source nat (**SNAT**) for this connections !  
 CNI configs:
 - calico [SNAT-Config](https://docs.tigera.io/calico/latest/networking/configuring/workloads-outside-cluster)
 - cilium [SNAT-Config](https://docs.cilium.io/en/stable/network/concepts/masquerading/)
