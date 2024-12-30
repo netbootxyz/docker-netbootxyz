@@ -13,8 +13,8 @@ mkdir -p \
 # copy config files
 [[ ! -f /config/nginx/nginx.conf ]] &&
   cp /defaults/nginx.conf /config/nginx/nginx.conf
-[[ ! -f /config/nginx/site-confs/default ]] &&
-  envsubst </defaults/default >/config/nginx/site-confs/default
+[[ ! -f /config/nginx/site-confs/default ]] && \
+  envsubst '${NGINX_PORT}' < /defaults/default > /config/nginx/site-confs/default
 
 # create dnsmasq config, and conditionally add DHCP proxy support
 if [[ ! -f /config/dnsmasq/dnsmasq.conf ]]; then
@@ -28,7 +28,7 @@ if [[ ! -f /config/dnsmasq/dnsmasq.conf ]]; then
       CONTAINER_IP=$(hostname -i)
       export CONTAINER_IP
     fi
-    envsubst </defaults/dnsmasq-dhcpproxy.conf >>/config/dnsmasq/dnsmasq.conf
+    envsubst '${DHCP_RANGE_START} ${CONTAINER_IP}' </defaults/dnsmasq-dhcpproxy.conf >>/config/dnsmasq/dnsmasq.conf
   fi
 fi
 
