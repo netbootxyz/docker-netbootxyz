@@ -13,7 +13,7 @@ mkdir -p \
 [[ ! -f /config/nginx/nginx.conf ]] && \
   cp /defaults/nginx.conf /config/nginx/nginx.conf
 [[ ! -f /config/nginx/site-confs/default ]] && \
-  envsubst < /defaults/default > /config/nginx/site-confs/default
+  envsubst '${NGINX_PORT}' < /defaults/default > /config/nginx/site-confs/default
 
 # Ownership
 chown -R nbxyz:nbxyz /assets
