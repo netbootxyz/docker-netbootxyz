@@ -25,7 +25,7 @@ if [[ ! -f /config/dnsmasq/dnsmasq.conf ]]; then
 
     # Get the container's IP address using hostname if not already set
     if [ -z "${CONTAINER_IP}" ]; then
-      CONTAINER_IP=$(hostname -i)
+      CONTAINER_IP=$(ip -4 addr show eth0 | awk '/inet / {print $2}' | cut -d/ -f1)
       export CONTAINER_IP
     fi
     envsubst '${DHCP_RANGE_START} ${CONTAINER_IP}' </defaults/dnsmasq-dhcpproxy.conf >>/config/dnsmasq/dnsmasq.conf
