@@ -17,3 +17,6 @@ services:
       - 69:69/udp
       - 8080:80  # optional, destination should match ${NGINX_PORT} variable above.
     restart: unless-stopped
+    # cap_add:
+    #   - NET_ADMIN  # required for DHCP Proxy mode.
+    # network_mode: host  # required for DHCP Proxy mode - network mode host, (or ipvlan/macvlan or a bridge).

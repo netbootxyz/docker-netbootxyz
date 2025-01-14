@@ -66,6 +66,8 @@ docker run -d \
   -p 8080:80                         `# optional, destination should match ${NGINX_PORT} variable above.` \
   -v /local/path/to/config:/config   `# optional` \
   -v /local/path/to/assets:/assets   `# optional` \
+  --cap-add NET_ADMIN                `# only required for DHCP Proxy mode` \
+  --network host                     `# only required for DHCP Proxy mode` \
   --restart unless-stopped \
   ghcr.io/netbootxyz/netbootxyz
 ```
@@ -127,7 +129,7 @@ Container images are configured using parameters passed at runtime (such as thos
 
 This image requires the usage of a DHCP server in order to function properly, unless you enable the **optional proxy-DHCP mode**. If you have an existing DHCP server, you will need to make some small adjustments to forward requests to the netboot.xyz container. You will typically set your `next-server` and `boot-file-name` parameters in the DHCP configuration. This tells DHCP to forward requests to the TFTP server and then select a boot file from the TFTP server.
 
-If you prefer not to modify your existing DHCP server, you can enable the **proxy-DHCP mode** by setting the `DHCP_RANGE_START` environment variable to the first IP in your DHCP range (e.g. 192.168.1.1). This mode allows netboot.xyz to provide PXE boot configuration while your existing DHCP server continues to handle IP address assignment.
+If you prefer not to modify your existing DHCP server, you can enable the **proxy-DHCP mode** by setting the `DHCP_RANGE_START` environment variable to the first IP in your DHCP range (e.g. 192.168.1.1). This mode allows netboot.xyz to provide PXE boot configuration while your existing DHCP server continues to handle IP address assignment. This mode requires the docker (or docker compose) parameter `--cap-add NET_ADMIN` be added and for the container to be running directly on the network to see the DHCP messages, i.e. with network mode set to `host` or via `ipvlan`/`macvlan` or a bridge.
 
 ### Examples
 
