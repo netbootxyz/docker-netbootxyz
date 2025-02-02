@@ -16,4 +16,14 @@ jobs:
         fetch-depth: '0'
 
     - name: Build the Docker image
-      run: docker build .
+      run: docker build -t docker-netbootxyz:${{ github.sha }} .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        image-ref: 'docker-netbootxyz:${{ github.sha }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
