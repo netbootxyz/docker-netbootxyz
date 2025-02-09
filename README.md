@@ -123,62 +123,72 @@ Container images are configured using parameters passed at runtime (such as thos
 
 ## DHCP Configurations
 
-This image requires the usage of a DHCP server in order to function properly. If you have an existing DHCP server, usually you will need to make some small adjustments to make your DHCP server forward requests to the netboot.xyz container. You will need to typically set your `next-server` and `boot-file-name` parameters in the DHCP configuration. This tells DHCP to forward requests to the TFTP server and then select a boot file from the TFTP server.
+The netboot.xyz Docker image requires the usage of a DHCP server in order to function properly. If you have an existing DHCP server, usually you will need to make some small adjustments to make your DHCP server forward requests to the netboot.xyz container. The main settings in your DHCP or router that you will typically need to set are:
 
-### Examples
+* `tftp-server` also known as `next-server`, this option tells the client where to look for the boot file
+* `boot-file-name`, this option tells the client which boot file to load
 
-These are a few configuration examples for setting up a DHCP server. The main configuration you will need to change are `next-server` and `filename/boot-file-name`. `Next-server` tells your client to check for a host running tftp and retrieve a boot file from there. Because the docker image is hosting a tftp server, the boot files are pulled from it and then it will attempt to load the iPXE configs directly from the host. You can then modify and adjust them to your needs. See [booting from TFTP](https://netboot.xyz/docs/booting/tftp/) for more information.
+## Examples
 
-#### isc-dhcp-server
+The following are some configuration examples for setting up a DHCP server to get started. The main configuration you will need to change are `SERVER_IP_ADDRESS` so that DHCP can direct the client to the server running the netboot.xyz Docker container. Because the Docker image is hosting a dnsmasq TFTP server, the boot files are pulled from it and then it will attempt to load the iPXE configs directly from the host. You can then modify and adjust them to your needs. See [booting from TFTP](https://netboot.xyz/docs/booting/tftp/) for more information.
 
-To install the DHCP server under Debian and Ubuntu run:
+### Setting up dnsmasq
+
+To install dnsmasq as your DHCP server for Debian and Ubuntu, run:
 
 ```shell
-sudo apt install isc-dhcp-server
+sudo apt install dnsmasq
 ```
 
-You must edit two files to configure `isc-dhcp-server`. Edit `/etc/default/isc-dhcp-server` and configure at least one of the INTERFACES variables with the name of the interface you want to run the DHCP server on:
+For Redhat-based systems, run:
 
 ```shell
-INTERFACESv4="eth0"
+sudo dnf install dnsmasq
 ```
 
-You'll also need a `/etc/dhcp/dhcpd.conf` looking something like this:
+Set up your configuration file `/etc/dnsmasq.conf` with the following settings:
 
 ```shell
-option arch code 93 = unsigned integer 16;
+# /etc/dnsmasq.conf
 
-subnet 192.168.0.0 netmask 255.255.255.0 {
-  range 192.168.0.34 192.168.0.254;       # Change this range as appropriate for your network
-  next-server 192.168.0.33;               # Change this to the address of your DHCP server
-  option subnet-mask 255.255.255.0;
-  option routers 192.168.0.1;             # Change this to the address of your router
-  option broadcast-address 192.168.0.255;
-  option domain-name "mynetwork.lan";     # This is optional
-  option domain-name-servers 1.1.1.1;
-  if exists user-class and ( option user-class = "iPXE" ) {
-    filename "http://boot.netboot.xyz/menu.ipxe";
-  } elsif option arch = encode-int ( 16, 16 ) {
-    filename "http://boot.netboot.xyz/ipxe/netboot.xyz.efi";
-    option vendor-class-identifier "HTTPClient";
-  } elsif option arch = 00:07 {
-    filename "netboot.xyz.efi";
-  } else {
-    filename "netboot.xyz.kpxe";
-  }
-}
+# Set the DHCP Range and lease time
+dhcp-range=192.168.1.100,192.168.1.200,255.255.255.0,12h
+
+# Set the default gateway
+dhcp-option=option:router,192.168.1.1
+
+# Set tne DNS servers
+dhcp-option=option:dns-server,8.8.8.8,8.8.4.4
+
+# Standard PC BIOS
+dhcp-match=set:bios,60,PXEClient:Arch:00000
+dhcp-boot=tag:bios,netboot.xyz.kpxe,,SERVER_IP_ADDRESS
+
+# 64-bit x86 EFI
+dhcp-match=set:efi64,60,PXEClient:Arch:00007
+dhcp-boot=tag:efi64,netboot.xyz.efi,,SERVER_IP_ADDRESS
+
+# 64-bit x86 EFI (obsolete)
+dhcp-match=set:efi64-2,60,PXEClient:Arch:00009
+dhcp-boot=tag:efi64-2,netboot.xyz.efi,,SERVER_IP_ADDRESS
+
+# 64-bit UEFI for arm64
+dhcp-match=set:efi64-3,60,PXEClient:Arch:0000B
+dhcp-boot=tag:efi64-3,netboot.xyz-arm64.efi,,SERVER_IP_ADDRESS
 ```
 
-Now you can try starting the DHCP server:
+A breakdown of the configuration:
+
+- `dhcp-range` sets the range of IP addresses and lease times that will be assigned to clients.
+- `dhcp-option` sets the default gateway and DNS servers.
+- `dhcp-boot` sets the boot file for different architectures, the `SERVER_IP_ADDRESS` should be replaced with the IP address of the host running the Docker container.
+- `dhcp-match` sets the match criteria for different architectures.
+
+Once the dnsmasq configuration is set, you can enable and start the service:
 
 ```shell
-sudo systemctl start isc-dhcp-server
-```
-
-To make the dhcp server start automatically on boot:
-
-```shell
-sudo systemctl enable isc-dhcp-server
+sudo systemctl enable dnsmasq
+sudo systemctl start dnsmasq
 ```
 
 ## netboot.xyz boot file types
