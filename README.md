@@ -57,7 +57,7 @@ The following snippets are examples of starting up the container.
 ```shell
 docker run -d \
   --name=netbootxyz \
-  -e MENU_VERSION=2.0.76             `# optional` \
+  -e MENU_VERSION=2.0.84             `# optional` \
   -e NGINX_PORT=80                   `# optional` \
   -e WEB_APP_PORT=3000               `# optional` \
   -p 3000:3000                       `# sets web configuration interface port, destination should match ${WEB_APP_PORT} variable above.` \
