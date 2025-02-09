@@ -1,11 +1,10 @@
 ---
-version: "2.1"
 services:
   netbootxyz:
     image: ghcr.io/netbootxyz/netbootxyz
     container_name: netbootxyz
     environment:
-      - MENU_VERSION=2.0.47 # optional
+      - MENU_VERSION=2.0.84 # optional
       - NGINX_PORT=80 # optional
       - WEB_APP_PORT=3000 # optional
     volumes:
