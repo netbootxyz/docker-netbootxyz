@@ -29,7 +29,7 @@ RUN \
  apk add --no-cache --virtual=build-dependencies \
    npm && \
  groupmod -g 1000 users && \
- useradd -u 911 -U -d /config -s /bin/false nbxyz && \
+ useradd -u 1011 -U -d /config -s /bin/false nbxyz && \
  usermod -G users nbxyz && \
  mkdir /app \
        /config \
@@ -44,7 +44,9 @@ RUN \
         /app/ --strip-components=1 && \
  npm install --prefix /app && \
  apk del --purge build-dependencies && \
- rm -rf /tmp/*
+ rm -rf /tmp/* && \
+ chown -R nbxyz:nbxyz /var/lib/nginx && \
+ chown -R nbxyz:nbxyz /var/log/nginx
 
 ENV TFTPD_OPTS=''
 ENV NGINX_PORT='80'
@@ -56,5 +58,7 @@ EXPOSE 3000
 
 COPY root/ /
 
-# default command
-CMD ["sh","/start.sh"]
+# ENTRYPOINT is not overwriteable
+ENTRYPOINT ["sh", "/start.sh"]
+# default command can be replaced in container-start
+#CMD ["sh","/start.sh"]

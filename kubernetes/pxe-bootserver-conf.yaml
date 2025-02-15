@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pxe-bootserver-conf
+  namespace: network
+data:
+  supervisor.conf: |+
+    [supervisord]
+    nodaemon=true
+    user=root
+    logfile=/config/supervisord.log
+    
+    [program:syslog-ng]
+    command=/usr/sbin/syslog-ng --foreground --no-caps
+    stdout_syslog=true
+    stdout_capture_maxbytes=1MB
+    priority = 1
+    
+    [program:nginx]
+    command = /usr/sbin/nginx -c /config/nginx/nginx.conf -e /config/log/nginx/error.log
+    startretries = 2
+    daemon=off
+    priority = 2
+    
+    [program:webapp]
+    environment=NODE_ENV="production",PORT=%(ENV_WEB_APP_PORT)s
+    command=/usr/bin/node app.js
+    user=nbxyz
+    directory=/app
+    priority = 3
+    
+    [program:dnsmasq]
+    command=/usr/sbin/dnsmasq --port=0 --keep-in-foreground --pid-file=/config/tmp/dnsmasq.pid --enable-tftp --user=nbxyz --tftp-secure --tftp-max=15 --tftp-port-range=1025,1039 --tftp-root=/config/menus %(ENV_TFTPD_OPTS)s
+    stdout_logfile=/config/tftpd.log
+    redirect_stderr=true
+    priority = 4
+    
+    [program:messages-log]
+    command=tail -f /var/log/messages
+    stdout_logfile=/dev/stdout
+    stdout_logfile_maxbytes=0    
+  nginx.conf: |+
+    user nbxyz;
+    worker_processes 4;
+    pid /config/tmp/nginx.pid;
+    include /etc/nginx/modules/*.conf;
+    
+    events {
+    	worker_connections 1024;
+    }
+    
+    http {
+    	sendfile on;
+    	tcp_nopush on;
+    	tcp_nodelay on;
+    	keepalive_timeout 65;
+    	types_hash_max_size 2048;
+    	client_max_body_size 1m;
+    	include /etc/nginx/mime.types;
+    	default_type application/octet-stream;
+    	access_log /config/log/nginx/access.log;
+    	error_log /config/log/nginx/error.log;
+    	# Temporary directories for kubernetes "readonlyfilesystem"
+    	client_body_temp_path /config/tmp/nginx/client-body;
+    	proxy_temp_path       /config/tmp/nginx/proxy;
+    	fastcgi_temp_path     /config/tmp/nginx/fastcgi;
+    	uwsgi_temp_path       /config/tmp/nginx/uwsgi;
+    	scgi_temp_path        /config/tmp/nginx/scgi;
+    	gzip on;
+    	gzip_disable "msie6";
+    	include /config/nginx/site-confs/*;
+    }
+    daemon off;

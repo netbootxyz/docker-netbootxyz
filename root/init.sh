@@ -6,8 +6,11 @@ mkdir -p \
   /config/nginx/site-confs \
   /config/log/nginx \
   /run \
-  /var/lib/nginx/tmp/client_body \
-  /var/tmp/nginx
+  /config/tmp/nginx/client-body \
+  /config/tmp/nginx/proxy \
+  /config/tmp/nginx/fastcgi \
+  /config/tmp/nginx/uwsgi \
+  /config/tmp/nginx/scgi
 
 # copy config files
 [[ ! -f /config/nginx/nginx.conf ]] && \
@@ -17,8 +20,8 @@ mkdir -p \
 
 # Ownership
 chown -R nbxyz:nbxyz /assets
-chown -R nbxyz:nbxyz /var/lib/nginx
-chown -R nbxyz:nbxyz /var/log/nginx
+#chown -R nbxyz:nbxyz /var/lib/nginx
+#chown -R nbxyz:nbxyz /var/log/nginx
 
 # create local logs dir
 mkdir -p \
