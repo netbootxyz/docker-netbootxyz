@@ -1,4 +1,4 @@
-FROM alpine:3.21.3 AS build
+FROM alpine:3.22.0 AS build
 
 # set version label
 ARG WEBAPP_VERSION
@@ -21,7 +21,7 @@ RUN apk add --no-cache \
     npm install --prefix /app && \
     rm -rf /tmp/*
 
-FROM alpine:3.21.3
+FROM alpine:3.22.0
 
 # set version label
 ARG BUILD_DATE
