@@ -19,7 +19,7 @@ jobs:
       run: docker build -t docker-netbootxyz:${{ github.sha }} .
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.30.0
+      uses: aquasecurity/trivy-action@0.31.0
       with:
         image-ref: 'docker-netbootxyz:${{ github.sha }}'
         format: 'table'
