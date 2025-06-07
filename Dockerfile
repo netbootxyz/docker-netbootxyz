@@ -64,5 +64,6 @@ EXPOSE 3000
 
 COPY root/ /
 
-# default command
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 CMD /healthcheck.sh
+
 CMD ["sh","/start.sh"]
