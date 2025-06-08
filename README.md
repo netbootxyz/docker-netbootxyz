@@ -57,6 +57,8 @@ The following snippets are examples of starting up the container.
 ```shell
 docker run -d \
   --name=netbootxyz \
+  -e PUID=1000                       `# optional, UserID for volume permissions` \
+  -e PGID=1000                       `# optional, GroupID for volume permissions` \
   -e MENU_VERSION=2.0.84             `# optional` \
   -e NGINX_PORT=80                   `# optional` \
   -e WEB_APP_PORT=3000               `# optional` \
@@ -114,12 +116,31 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-p 3000` | Web configuration interface. |
 | `-p 69/udp` | TFTP Port. |
 | `-p 80` | NGINX server for hosting assets. |
+| `-e PUID=1000` | UserID for volume permissions - see below for explanation |
+| `-e PGID=1000` | GroupID for volume permissions - see below for explanation |
 | `-e WEB_APP_PORT=3000` | Specify a different port for the web configuration interface to listen on. |
 | `-e NGINX_PORT=80` | Specify a different port for NGINX service to listen on. |
 | `-e MENU_VERSION=2.0.76` | Specify a specific version of boot files you want to use from netboot.xyz (unset pulls latest) |
 | `-e TFTPD_OPTS='--tftp-single-port'` | Specify arguments for the TFTP server (this example makes TFTP send all data over port 69) |
 | `-v /config` | Storage for boot menu files and web application config |
 | `-v /assets` | Storage for netboot.xyz bootable assets (live CDs and other files) |
+
+## User / Group Identifiers
+
+When using volumes (`-v` flags), permissions issues can arise between the host OS and the container. We avoid this issue by allowing you to specify the user `PUID` and group `PGID`.
+
+Ensure any volume directories on the host are owned by the same user you specify and any permissions issues will vanish like magic.
+
+In this instance `PUID=1000` and `PGID=1000`, to find yours use `id your_user` as below:
+
+```bash
+id your_user
+```
+
+Example output:
+```bash
+uid=1000(your_user) gid=1000(your_user) groups=1000(your_user)
+```
 
 ## DHCP Configurations
 

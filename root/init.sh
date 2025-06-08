@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# Configure user and group IDs
+PUID=${PUID:-1000}
+PGID=${PGID:-1000}
+
+echo "[init] Setting up user nbxyz with PUID=${PUID} and PGID=${PGID}"
+
+# Create group with specified GID if it doesn't exist
+if ! getent group ${PGID} > /dev/null 2>&1; then
+    groupadd -g ${PGID} nbxyz
+else
+    echo "[init] Group with GID ${PGID} already exists"
+fi
+
+# Create user with specified UID if it doesn't exist
+if ! getent passwd ${PUID} > /dev/null 2>&1; then
+    useradd -u ${PUID} -g ${PGID} -d /config -s /bin/false nbxyz
+else
+    echo "[init] User with UID ${PUID} already exists"
+fi
+
+# Add to users group for compatibility
+usermod -a -G users nbxyz 2>/dev/null || true
+
 # make our folders
 mkdir -p \
   /assets \
@@ -7,7 +30,8 @@ mkdir -p \
   /config/log/nginx \
   /run \
   /var/lib/nginx/tmp/client_body \
-  /var/tmp/nginx
+  /var/tmp/nginx \
+  /var/log
 
 # copy config files
 [[ ! -f /config/nginx/nginx.conf ]] && \
@@ -15,10 +39,12 @@ mkdir -p \
 [[ ! -f /config/nginx/site-confs/default ]] && \
   envsubst '${NGINX_PORT}' < /defaults/default > /config/nginx/site-confs/default
 
-# Ownership
+# Set up permissions for all directories that services need to write to
 chown -R nbxyz:nbxyz /assets
 chown -R nbxyz:nbxyz /var/lib/nginx
-chown -R nbxyz:nbxyz /var/log/nginx
+chown -R nbxyz:nbxyz /var/log
+chown -R nbxyz:nbxyz /run
+chown -R nbxyz:nbxyz /var/tmp/nginx
 
 # create local logs dir
 mkdir -p \

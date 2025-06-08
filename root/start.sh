@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Perform the initial configuration
+# Perform the initial configuration as root
 /init.sh
 
 echo "            _   _                 _                      "
@@ -15,4 +15,7 @@ echo
 echo "https://opencollective.com/netbootxyz" 
 echo "https://github.com/sponsors/netbootxyz"
 echo
-supervisord -c /etc/supervisor.conf
+
+# Run supervisord as root (it will use gosu for individual programs)
+echo "[start] Starting supervisord (programs will run as nbxyz)"
+exec supervisord -c /etc/supervisor.conf
