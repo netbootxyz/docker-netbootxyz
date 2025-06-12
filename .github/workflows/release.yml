@@ -13,6 +13,7 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         fetch-depth: '0'
+        fetch-tags: true
         
     - name: Set env variables
       run: |
@@ -73,7 +74,7 @@ jobs:
         IMAGE_RELEASE=$(echo ${IMAGE_INFO} | jq -r '.Labels.build_version' | awk '{print $3}')
         IMAGE_VERSION=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $1}')
         NB_RELEASE_NUMBER=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $2}')
-        TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE})
+        TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE} 2>/dev/null || echo "")
         if [ -z "${MULTIDIGEST}" ] || [ "${MULTIDIGEST}" == "null" ]; then
           echo "**** No existing container build found, assuming first build ****"
           VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
