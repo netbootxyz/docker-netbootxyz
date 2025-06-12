@@ -29,6 +29,7 @@ mkdir -p \
   /config/nginx/site-confs \
   /config/log/nginx \
   /run \
+  /var/lib/nginx/logs \
   /var/lib/nginx/tmp/client_body \
   /var/tmp/nginx \
   /var/log
@@ -45,6 +46,7 @@ chown -R nbxyz:nbxyz /var/lib/nginx
 chown -R nbxyz:nbxyz /config/log/nginx
 chown -R nbxyz:nbxyz /run
 chown -R nbxyz:nbxyz /var/tmp/nginx
+chown -R nbxyz:nbxyz /var/log/nginx
 
 # create local logs dir
 mkdir -p \
