@@ -54,7 +54,7 @@ jobs:
         TAG=$(curl -s --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
            --header "Authorization: Bearer ${TOKEN}" \
            "https://ghcr.io/v2/${IMAGE}/tags/list?n=1000" \
-           | jq -r '.tags[-1]')
+           | jq -r '.tags[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+-nbxyz[0-9]+$"))' | sort -V | tail -1)
         echo LATEST_TAG: $TAG
         MULTIDIGEST=$(curl -s \
             --header "Accept: application/vnd.oci.image.index.v1+json" \
