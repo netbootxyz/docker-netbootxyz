@@ -70,10 +70,10 @@ jobs:
           --header "Authorization: Bearer ${TOKEN}" \
            "https://ghcr.io/v2/${IMAGE}/blobs/${DIGEST}" \
            | jq -r '.config')
-        IMAGE_RELEASE=$(echo ${IMAGE_INFO} | jq -r '.Labels.build_version' | awk '{print $3}')
+        IMAGE_RELEASE=${TAG}
         IMAGE_VERSION=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $1}')
         NB_RELEASE_NUMBER=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $2}')
-        TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE})
+        TAG_SHA=$(git rev-list -n 1 "v${IMAGE_RELEASE}" 2>/dev/null || echo "")
         if [ -z "${MULTIDIGEST}" ] || [ "${MULTIDIGEST}" == "null" ]; then
           echo "**** No existing container build found, assuming first build ****"
           VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
@@ -94,6 +94,15 @@ jobs:
           VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
           echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
         fi
+        
+        # Ensure we don't create duplicate tags
+        while git rev-parse "v${VERSION_TAG}" >/dev/null 2>&1; do
+          echo "**** Tag v${VERSION_TAG} already exists, incrementing... ****"
+          NB_RELEASE_NUMBER=$(echo ${VERSION_TAG} | awk -F'-nbxyz' '{print $2}')
+          NB_RELEASE_NUMBER=$((NB_RELEASE_NUMBER + 1))
+          VERSION_TAG=$(echo ${VERSION_TAG} | awk -F'-nbxyz' '{print $1}')-nbxyz${NB_RELEASE_NUMBER}
+          echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
+        done
         
     - name: Docker meta
       if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
