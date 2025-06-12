@@ -13,7 +13,7 @@ RUN apk add --no-cache --virtual .build-deps \
     npm \
     && mkdir /app \
     # Determine webapp version if not provided
-    && if [ -z ${WEBAPP_VERSION+x} ]; then \
+    && if [ -z "${WEBAPP_VERSION+x}" ]; then \
         WEBAPP_VERSION=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" \
         | awk '/tag_name/{print $4;exit}' FS='[""]'); \
     fi \
