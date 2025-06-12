@@ -13,7 +13,6 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         fetch-depth: '0'
-        fetch-tags: true
         
     - name: Set env variables
       run: |
@@ -74,11 +73,7 @@ jobs:
         IMAGE_RELEASE=$(echo ${IMAGE_INFO} | jq -r '.Labels.build_version' | awk '{print $3}')
         IMAGE_VERSION=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $1}')
         NB_RELEASE_NUMBER=$(echo ${IMAGE_RELEASE} | awk -F'-nbxyz' '{print $2}')
-        if git rev-parse --verify "refs/tags/${IMAGE_RELEASE}" >/dev/null 2>&1; then
-          TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE})
-        else
-          TAG_SHA=""
-        fi
+        TAG_SHA=$(git rev-list -n 1 ${IMAGE_RELEASE})
         if [ -z "${MULTIDIGEST}" ] || [ "${MULTIDIGEST}" == "null" ]; then
           echo "**** No existing container build found, assuming first build ****"
           VERSION_TAG=${WEBAPP_RELEASE}-nbxyz1
@@ -142,20 +137,8 @@ jobs:
           ghcr.io/netbootxyz/netbootxyz:${{ env.VERSION_TAG }}
         labels: ${{ steps.meta.outputs.labels }}
         
-    - name: Check if tag exists
-      if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
-      id: check_tag
-      run: |
-        if git rev-parse --verify "refs/tags/${{ env.VERSION_TAG }}" >/dev/null 2>&1; then
-          echo "Tag ${{ env.VERSION_TAG }} already exists, skipping tag creation"
-          echo "tag_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "Tag ${{ env.VERSION_TAG }} does not exist, will create"
-          echo "tag_exists=false" >> $GITHUB_OUTPUT
-        fi
-
     - name: Bump version and push tag
-      if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success' && steps.check_tag.outputs.tag_exists == 'false'
+      if: steps.version_check.outcome == 'success' && steps.version_check.conclusion == 'success'
       id: tag_version
       uses: anothrNick/github-tag-action@1.73.0
       env:
