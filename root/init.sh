@@ -42,7 +42,7 @@ mkdir -p \
 # Set up permissions for all directories that services need to write to
 chown -R nbxyz:nbxyz /assets
 chown -R nbxyz:nbxyz /var/lib/nginx
-chown -R nbxyz:nbxyz /var/log
+chown -R nbxyz:nbxyz /config/log/nginx
 chown -R nbxyz:nbxyz /run
 chown -R nbxyz:nbxyz /var/tmp/nginx
 
