@@ -15,13 +15,57 @@ jobs:
       with:
         fetch-depth: '0'
 
-    - name: Build the Docker image
-      run: docker build -t docker-netbootxyz:${{ github.sha }} .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Login to the Docker Container Registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Login to the GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Get latest Webapp release version
+      run: |
+        WEBAPP_RELEASE=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" | jq -r '. | .tag_name')
+        echo "WEBAPP_RELEASE=${WEBAPP_RELEASE}" >> $GITHUB_ENV
+
+    - name: Build and push PR test image
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          WEBAPP_VERSION=${{ env.WEBAPP_RELEASE }}
+          VERSION=pr-${{ github.event.number }}
+          BUILD_DATE=$(date +'%Y-%m-%dT%H:%M:%S')
+        tags: |
+          netbootxyz/netbootxyz:pr-${{ github.event.number }}
+          netbootxyz/netbootxyz:pr-${{ github.event.number }}-${{ github.sha }}
+          ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}
+          ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}-${{ github.sha }}
+        labels: |
+          org.opencontainers.image.title=netbootxyz
+          org.opencontainers.image.description=netboot.xyz PR test image
+          org.opencontainers.image.version=pr-${{ github.event.number }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.source=https://github.com/netbootxyz/docker-netbootxyz
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@0.31.0
       with:
-        image-ref: 'docker-netbootxyz:${{ github.sha }}'
+        image-ref: 'ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true

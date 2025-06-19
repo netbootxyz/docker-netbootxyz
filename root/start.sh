@@ -16,6 +16,6 @@ echo "https://opencollective.com/netbootxyz"
 echo "https://github.com/sponsors/netbootxyz"
 echo
 
-# Run supervisord as root (it will use gosu for individual programs)
+# Run supervisord as root
 echo "[start] Starting supervisord (programs will run as nbxyz)"
 exec supervisord -c /etc/supervisor.conf
