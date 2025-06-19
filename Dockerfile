@@ -67,8 +67,6 @@ RUN apk add --no-cache \
     sudo \
     supervisor \
     syslog-ng \
-    # Security tools
-    gosu \
     # Runtime libraries
     nghttp2-dev \
     # Create required directories
