@@ -63,7 +63,7 @@ jobs:
           org.opencontainers.image.source=https://github.com/netbootxyz/docker-netbootxyz
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.31.0
+      uses: aquasecurity/trivy-action@0.32.0
       with:
         image-ref: 'ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}'
         format: 'table'
