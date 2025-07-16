@@ -1,5 +1,5 @@
 # Build stage - Download and prepare webapp
-FROM alpine:3.22.0 AS build
+FROM alpine:3.22.1 AS build
 
 # Set version label
 ARG WEBAPP_VERSION
@@ -30,7 +30,7 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk del .build-deps
 
 # Production stage - Final container
-FROM alpine:3.22.0
+FROM alpine:3.22.1
 
 # Build arguments for labels
 ARG BUILD_DATE
