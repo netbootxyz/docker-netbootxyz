@@ -13,7 +13,7 @@ if ! curl -fs http://127.0.0.1:${NGINX_PORT:-80}/ > /dev/null; then
 fi
 
 # Check Web App
-if ! curl -fs http://127.0.0.1:${WEB_APP_PORT:-3000}/ > /dev/null; then
+if ! curl -fs http://127.0.0.1:${WEB_APP_PORT:-3000}${SUBFOLDER:-/} > /dev/null; then
   echo "Web App check failed"
   exit 1
 fi
