@@ -50,6 +50,7 @@ LABEL org.opencontainers.image.title="netboot.xyz" \
       maintainer="antonym"
 
 # Install runtime dependencies and configure system in a single layer
+RUN apk --initdb add --no-cache alpine-baselayout busybox
 RUN apk add --no-cache \
     # Core utilities
     bash \
@@ -91,7 +92,7 @@ EXPOSE 80
 EXPOSE 3000
 
 # Copy configuration files and scripts
-COPY --chown=root:root root/ /
+COPY root/ /
 
 # Make scripts executable
 RUN chmod +x /start.sh /init.sh /healthcheck.sh /usr/local/bin/dnsmasq-wrapper.sh
