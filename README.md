@@ -269,4 +269,4 @@ dhcp-boot=tag:efi-arm64-sb,secureboot-arm64/shimaa64.efi,,SERVER_IP_ADDRESS
 
 All files within a Secure Boot directory must remain together in the same TFTP path since the shim expects to find iPXE and the `autoexec.ipxe` script alongside it.
 
-> **Note:** Secure Boot support requires a netboot.xyz release that includes `autoexec.ipxe`. If you pin `MENU_VERSION` to an older release, the Secure Boot binaries will still be downloaded from iPXE but the boot script will be missing and a warning will be logged.
+> **Note:** Secure Boot files are downloaded independently of the menu files. Existing installs will automatically pick up Secure Boot binaries on the next container restart. The `autoexec.ipxe` boot script requires a netboot.xyz release that includes it — if `MENU_VERSION` points to an older release, the signed binaries will still be downloaded but the boot script will be missing and a warning will be logged.

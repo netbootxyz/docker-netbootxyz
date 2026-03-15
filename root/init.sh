@@ -53,11 +53,17 @@ mkdir -p \
   /config/menus/remote \
   /config/menus/local
 
-# download menus if not found
-if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
-  if [[ -z ${MENU_VERSION+x} ]]; then
+# resolve menu version once for use by both menu and secure boot downloads
+if [[ -z ${MENU_VERSION+x} ]]; then
+  if [[ -f /config/menuversion.txt ]]; then
+    MENU_VERSION=$(cat /config/menuversion.txt)
+  else
     MENU_VERSION=$(curl -sL "https://api.github.com/repos/netbootxyz/netboot.xyz/releases/latest" | jq -r '.tag_name')
   fi
+fi
+
+# download menus if not found
+if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   echo "[netbootxyz-init] Downloading netboot.xyz at ${MENU_VERSION}"
   # menu files
   curl -o \
@@ -94,14 +100,20 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   curl -o \
     /config/menus/remote/netboot.xyz-arm64-snponly.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snponly.efi"
-  # Secure Boot files:
-  # - Signed EFI binaries are downloaded unmodified from the upstream iPXE
-  #   project release at https://github.com/ipxe/ipxe/releases (ipxeboot.tar.gz).
-  #   These include the Microsoft-signed shim and iPXE binaries signed by the
-  #   iPXE Secure Boot CA. They are not rebuilt or altered by netboot.xyz.
-  # - The autoexec.ipxe boot script is downloaded from the netboot.xyz release.
-  #   It is the only netboot.xyz-produced artifact in the Secure Boot chain.
-  # - IPXE_SB_VERSION can be overridden to pin a specific iPXE release version.
+  # cleanup
+  echo -n "${MENU_VERSION}" > /config/menuversion.txt
+  rm -f /tmp/menus.tar.gz
+fi
+
+# Secure Boot files (runs independently of menu download):
+# - Signed EFI binaries are downloaded unmodified from the upstream iPXE
+#   project release at https://github.com/ipxe/ipxe/releases (ipxeboot.tar.gz).
+#   These include the Microsoft-signed shim and iPXE binaries signed by the
+#   iPXE Secure Boot CA. They are not rebuilt or altered by netboot.xyz.
+# - The autoexec.ipxe boot script is downloaded from the netboot.xyz release.
+#   It is the only netboot.xyz-produced artifact in the Secure Boot chain.
+# - IPXE_SB_VERSION can be overridden to pin a specific iPXE release version.
+if [[ ! -d /config/menus/remote/secureboot-x86_64 ]]; then
   IPXE_SB_VERSION="${IPXE_SB_VERSION:-v2.0.0}"
   echo "[netbootxyz-init] Downloading Secure Boot binaries (iPXE ${IPXE_SB_VERSION})..."
   curl -o \
@@ -129,10 +141,8 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
         fi
       done
       # download autoexec.ipxe boot script from netboot.xyz release
-      curl -o \
-        /tmp/autoexec.ipxe -sL \
-        "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/autoexec.ipxe"
-      if [[ -f /tmp/autoexec.ipxe ]] && [[ -s /tmp/autoexec.ipxe ]]; then
+      if curl -o /tmp/autoexec.ipxe -fsSL \
+        "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/autoexec.ipxe"; then
         cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-x86_64/autoexec.ipxe
         cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-arm64/autoexec.ipxe
         rm -f /tmp/autoexec.ipxe
@@ -146,9 +156,6 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   else
     echo "[netbootxyz-init] iPXE Secure Boot archive not available, skipping"
   fi
-  # cleanup
-  echo -n "${MENU_VERSION}" > /config/menuversion.txt
-  rm -f /tmp/menus.tar.gz
 fi
 
 # Apply menu layering: remote files first, then local overrides on top
