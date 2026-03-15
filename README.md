@@ -227,3 +227,41 @@ The following bootfile names can be set as the boot file in the DHCP configurati
 | `netboot.xyz-arm64-snp.efi` | UEFI w/ Simple Network Protocol, attempts to boot all net devices |
 | `netboot.xyz-arm64-snponly.efi` | UEFI w/ Simple Network Protocol, only boots from device chained from |
 | `netboot.xyz-rpi4-snp.efi` | UEFI for Raspberry Pi 4, attempts to boot all net devices |
+
+## UEFI Secure Boot
+
+The container automatically downloads Microsoft-signed iPXE Secure Boot binaries from netboot.xyz releases. These are placed in subdirectories under `/config/menus/`:
+
+| directory | description |
+| ----------|-------------|
+| `secureboot-x86_64/` | x86_64 UEFI Secure Boot binaries |
+| `secureboot-arm64/` | ARM64 UEFI Secure Boot binaries |
+
+Each directory contains:
+
+| file | description |
+| -----|-------------|
+| `shimx64.efi` / `shimaa64.efi` | Microsoft-signed shim (UEFI firmware entry point) |
+| `ipxe-shim.efi` | iPXE shim, loads iPXE with built-in NIC drivers |
+| `ipxe.efi` | iPXE binary signed by iPXE Secure Boot CA |
+| `snponly.efi` | SNP-only iPXE, boots from chained device only |
+| `snponly-shim.efi` | Shim for SNP-only iPXE |
+| `autoexec.ipxe` | Boot script that chains into the netboot.xyz menu system |
+
+The boot flow is: UEFI firmware validates the Microsoft-signed shim, which loads iPXE (signed by iPXE Secure Boot CA), which auto-loads `autoexec.ipxe` (text script, no Secure Boot validation needed), which chains to the netboot.xyz menu.
+
+To use Secure Boot with DHCP/TFTP, point your DHCP server to the shim as the boot file:
+
+```shell
+# 64-bit x86 EFI with Secure Boot
+dhcp-match=set:efi64-sb,60,PXEClient:Arch:00007
+dhcp-boot=tag:efi64-sb,secureboot-x86_64/shimx64.efi,,SERVER_IP_ADDRESS
+
+# 64-bit ARM64 UEFI with Secure Boot
+dhcp-match=set:efi-arm64-sb,60,PXEClient:Arch:0000B
+dhcp-boot=tag:efi-arm64-sb,secureboot-arm64/shimaa64.efi,,SERVER_IP_ADDRESS
+```
+
+All files within a Secure Boot directory must remain together in the same TFTP path since the shim expects to find iPXE and the `autoexec.ipxe` script alongside it.
+
+> **Note:** Secure Boot binaries are only available from netboot.xyz releases that include them. If you pin `MENU_VERSION` to an older release, the Secure Boot files will not be downloaded and a warning will be logged.

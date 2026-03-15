@@ -94,10 +94,45 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   curl -o \
     /config/menus/remote/netboot.xyz-arm64-snponly.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snponly.efi"
-  # layer and cleanup
+  # secure boot files
+  echo "[netbootxyz-init] Downloading Secure Boot binaries..."
+  curl -o \
+    /tmp/secureboot-x86_64.tar.gz -sL \
+    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/secureboot-x86_64.tar.gz"
+  if [ -f /tmp/secureboot-x86_64.tar.gz ] && [ -s /tmp/secureboot-x86_64.tar.gz ]; then
+    tar xf /tmp/secureboot-x86_64.tar.gz -C /config/menus/remote
+  else
+    echo "[netbootxyz-init] Secure Boot x86_64 tarball not available for ${MENU_VERSION}, skipping"
+  fi
+  curl -o \
+    /tmp/secureboot-arm64.tar.gz -sL \
+    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/secureboot-arm64.tar.gz"
+  if [ -f /tmp/secureboot-arm64.tar.gz ] && [ -s /tmp/secureboot-arm64.tar.gz ]; then
+    tar xf /tmp/secureboot-arm64.tar.gz -C /config/menus/remote
+  else
+    echo "[netbootxyz-init] Secure Boot ARM64 tarball not available for ${MENU_VERSION}, skipping"
+  fi
+  # cleanup
   echo -n "${MENU_VERSION}" > /config/menuversion.txt
-  cp -r /config/menus/remote/* /config/menus
-  rm -f /tmp/menus.tar.gz
+  rm -f /tmp/menus.tar.gz /tmp/secureboot-*.tar.gz
+fi
+
+# Apply menu layering: remote files first, then local overrides on top
+# This mirrors the webapp's layermenu() function and ensures user
+# customizations (boot.cfg, local-vars.ipxe, etc.) persist across
+# container restarts
+echo "[netbootxyz-init] Applying menu layers..."
+for file in /config/menus/remote/*; do
+  [ -f "$file" ] && cp "$file" /config/menus/
+done
+# Copy Secure Boot subdirectories if present
+for sbdir in /config/menus/remote/secureboot-*/; do
+  [ -d "$sbdir" ] && cp -r "$sbdir" /config/menus/
+done
+if [ -d /config/menus/local ]; then
+  for file in /config/menus/local/*; do
+    [ -f "$file" ] && cp "$file" /config/menus/
+  done
 fi
 
 # Ownership
