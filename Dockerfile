@@ -24,6 +24,8 @@ RUN apk add --no-cache --virtual .build-deps \
     # Install only production dependencies
     && cd /app \
     && npm install --omit=dev --no-audit --no-fund \
+    # Upgrade systeminformation to fix CVE-2025-68154, CVE-2026-26280, CVE-2026-26318
+    && npm install systeminformation@5.31.0 --omit=dev --no-audit --no-fund --save \
     # Clean up build artifacts and cache
     && npm cache clean --force \
     && rm -rf /tmp/* \
@@ -71,6 +73,8 @@ RUN apk --initdb add --no-cache \
     syslog-ng \
     # Runtime libraries
     nghttp2-dev \
+    # Upgrade zlib to fix CVE-2026-22184
+    && apk add --no-cache zlib>=1.3.2 \
     # Create required directories
     && mkdir -p /app /config /defaults \
     # Remove unnecessary packages to reduce size
