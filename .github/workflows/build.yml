@@ -109,7 +109,7 @@ jobs:
         touch "/tmp/digests/${digest#sha256:}"
 
     - name: Upload digest
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: digests-amd64
         path: /tmp/digests/*
@@ -178,7 +178,7 @@ jobs:
         touch "/tmp/digests/${digest#sha256:}"
 
     - name: Upload digest
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: digests-arm64
         path: /tmp/digests/*
@@ -219,7 +219,7 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
 
     - name: Download digests
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: /tmp/digests
         pattern: digests-*
