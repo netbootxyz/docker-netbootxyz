@@ -73,10 +73,10 @@ RUN apk --initdb add --no-cache \
     syslog-ng \
     # Runtime libraries
     nghttp2-dev \
-    # Upgrade zlib to fix CVE-2026-22184
-    && apk add --no-cache zlib>=1.3.2 \
     # Create required directories
     && mkdir -p /app /config /defaults \
+    # Upgrade zlib to fix CVE-2026-22184
+    && apk add --no-cache --upgrade zlib \
     # Remove unnecessary packages to reduce size
     && rm -rf /var/cache/apk/*
 
