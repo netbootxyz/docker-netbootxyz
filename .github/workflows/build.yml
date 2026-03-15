@@ -117,7 +117,7 @@ jobs:
         retention-days: 1
 
     - name: Run Trivy vulnerability scanner (amd64)
-      uses: aquasecurity/trivy-action@0.33.1
+      uses: aquasecurity/trivy-action@0.34.0
       with:
         image-ref: 'ghcr.io/netbootxyz/netbootxyz@${{ steps.build.outputs.digest }}'
         version: 'v0.69.3'
@@ -186,7 +186,7 @@ jobs:
         retention-days: 1
 
     - name: Run Trivy vulnerability scanner (arm64)
-      uses: aquasecurity/trivy-action@0.33.1
+      uses: aquasecurity/trivy-action@0.34.0
       env:
         TRIVY_PLATFORM: linux/arm64
       with:
