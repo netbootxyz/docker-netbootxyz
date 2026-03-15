@@ -230,7 +230,12 @@ The following bootfile names can be set as the boot file in the DHCP configurati
 
 ## UEFI Secure Boot
 
-The container automatically downloads Microsoft-signed iPXE Secure Boot binaries from netboot.xyz releases. These are placed in subdirectories under `/config/menus/`:
+The container supports UEFI Secure Boot by downloading:
+
+- **Signed iPXE binaries** directly from the upstream [iPXE project release](https://github.com/ipxe/ipxe/releases) (`ipxeboot.tar.gz`). These are **unmodified** pre-built binaries from iPXE; netboot.xyz does not rebuild or alter them in any way. The default version is `v2.0.0` and can be overridden with the `IPXE_SB_VERSION` environment variable.
+- **`autoexec.ipxe`** boot script from the [netboot.xyz release](https://github.com/netbootxyz/netboot.xyz/releases), which chains into the netboot.xyz menu system.
+
+These are placed in subdirectories under `/config/menus/`:
 
 | directory | description |
 | ----------|-------------|
@@ -239,14 +244,14 @@ The container automatically downloads Microsoft-signed iPXE Secure Boot binaries
 
 Each directory contains:
 
-| file | description |
-| -----|-------------|
-| `shimx64.efi` / `shimaa64.efi` | Microsoft-signed shim (UEFI firmware entry point) |
-| `ipxe-shim.efi` | iPXE shim, loads iPXE with built-in NIC drivers |
-| `ipxe.efi` | iPXE binary signed by iPXE Secure Boot CA |
-| `snponly.efi` | SNP-only iPXE, boots from chained device only |
-| `snponly-shim.efi` | Shim for SNP-only iPXE |
-| `autoexec.ipxe` | Boot script that chains into the netboot.xyz menu system |
+| file | source | description |
+| -----|--------|-------------|
+| `shimx64.efi` / `shimaa64.efi` | iPXE release | Microsoft-signed shim (UEFI firmware entry point) |
+| `ipxe-shim.efi` | iPXE release | iPXE shim, loads iPXE with built-in NIC drivers |
+| `ipxe.efi` | iPXE release | iPXE binary signed by iPXE Secure Boot CA |
+| `snponly.efi` | iPXE release | SNP-only iPXE, boots from chained device only |
+| `snponly-shim.efi` | iPXE release | Shim for SNP-only iPXE |
+| `autoexec.ipxe` | netboot.xyz release | Boot script that chains into the netboot.xyz menu system |
 
 The boot flow is: UEFI firmware validates the Microsoft-signed shim, which loads iPXE (signed by iPXE Secure Boot CA), which auto-loads `autoexec.ipxe` (text script, no Secure Boot validation needed), which chains to the netboot.xyz menu.
 
@@ -264,4 +269,4 @@ dhcp-boot=tag:efi-arm64-sb,secureboot-arm64/shimaa64.efi,,SERVER_IP_ADDRESS
 
 All files within a Secure Boot directory must remain together in the same TFTP path since the shim expects to find iPXE and the `autoexec.ipxe` script alongside it.
 
-> **Note:** Secure Boot binaries are only available from netboot.xyz releases that include them. If you pin `MENU_VERSION` to an older release, the Secure Boot files will not be downloaded and a warning will be logged.
+> **Note:** Secure Boot support requires a netboot.xyz release that includes `autoexec.ipxe`. If you pin `MENU_VERSION` to an older release, the Secure Boot binaries will still be downloaded from iPXE but the boot script will be missing and a warning will be logged.

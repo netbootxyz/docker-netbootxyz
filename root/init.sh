@@ -94,27 +94,50 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
   curl -o \
     /config/menus/remote/netboot.xyz-arm64-snponly.efi -sL \
     "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/netboot.xyz-arm64-snponly.efi"
-  # secure boot files
-  echo "[netbootxyz-init] Downloading Secure Boot binaries..."
+  # Secure Boot files:
+  # - Signed EFI binaries are downloaded unmodified from the upstream iPXE
+  #   project release at https://github.com/ipxe/ipxe/releases (ipxeboot.tar.gz).
+  #   These include the Microsoft-signed shim and iPXE binaries signed by the
+  #   iPXE Secure Boot CA. They are not rebuilt or altered by netboot.xyz.
+  # - The autoexec.ipxe boot script is downloaded from the netboot.xyz release.
+  #   It is the only netboot.xyz-produced artifact in the Secure Boot chain.
+  # - IPXE_SB_VERSION can be overridden to pin a specific iPXE release version.
+  IPXE_SB_VERSION="${IPXE_SB_VERSION:-v2.0.0}"
+  echo "[netbootxyz-init] Downloading Secure Boot binaries (iPXE ${IPXE_SB_VERSION})..."
   curl -o \
-    /tmp/secureboot-x86_64.tar.gz -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/secureboot-x86_64.tar.gz"
-  if [ -f /tmp/secureboot-x86_64.tar.gz ] && [ -s /tmp/secureboot-x86_64.tar.gz ]; then
-    tar xf /tmp/secureboot-x86_64.tar.gz -C /config/menus/remote
+    /tmp/ipxeboot.tar.gz -sL \
+    "https://github.com/ipxe/ipxe/releases/download/${IPXE_SB_VERSION}/ipxeboot.tar.gz"
+  if [[ -f /tmp/ipxeboot.tar.gz ]] && [[ -s /tmp/ipxeboot.tar.gz ]]; then
+    mkdir -p \
+      /config/menus/remote/secureboot-x86_64 \
+      /config/menus/remote/secureboot-arm64
+    tar xf /tmp/ipxeboot.tar.gz -C /tmp
+    # x86_64 secure boot binaries
+    for f in shimx64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
+      cp "/tmp/ipxeboot/x86_64-sb/${f}" /config/menus/remote/secureboot-x86_64/
+    done
+    # arm64 secure boot binaries
+    for f in shimaa64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
+      cp "/tmp/ipxeboot/arm64-sb/${f}" /config/menus/remote/secureboot-arm64/
+    done
+    rm -rf /tmp/ipxeboot /tmp/ipxeboot.tar.gz
+    # download autoexec.ipxe boot script from netboot.xyz release
+    curl -o \
+      /tmp/autoexec.ipxe -sL \
+      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/autoexec.ipxe"
+    if [[ -f /tmp/autoexec.ipxe ]] && [[ -s /tmp/autoexec.ipxe ]]; then
+      cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-x86_64/autoexec.ipxe
+      cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-arm64/autoexec.ipxe
+      rm -f /tmp/autoexec.ipxe
+    else
+      echo "[netbootxyz-init] autoexec.ipxe not available for ${MENU_VERSION}, skipping"
+    fi
   else
-    echo "[netbootxyz-init] Secure Boot x86_64 tarball not available for ${MENU_VERSION}, skipping"
-  fi
-  curl -o \
-    /tmp/secureboot-arm64.tar.gz -sL \
-    "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/secureboot-arm64.tar.gz"
-  if [ -f /tmp/secureboot-arm64.tar.gz ] && [ -s /tmp/secureboot-arm64.tar.gz ]; then
-    tar xf /tmp/secureboot-arm64.tar.gz -C /config/menus/remote
-  else
-    echo "[netbootxyz-init] Secure Boot ARM64 tarball not available for ${MENU_VERSION}, skipping"
+    echo "[netbootxyz-init] iPXE Secure Boot archive not available, skipping"
   fi
   # cleanup
   echo -n "${MENU_VERSION}" > /config/menuversion.txt
-  rm -f /tmp/menus.tar.gz /tmp/secureboot-*.tar.gz
+  rm -f /tmp/menus.tar.gz
 fi
 
 # Apply menu layering: remote files first, then local overrides on top
