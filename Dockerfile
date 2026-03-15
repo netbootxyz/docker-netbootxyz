@@ -1,5 +1,5 @@
 # Build stage - Download and prepare webapp
-FROM alpine:3.22.2 AS build
+FROM alpine:3.23.3 AS build
 
 # Set version label
 ARG WEBAPP_VERSION
@@ -24,13 +24,15 @@ RUN apk add --no-cache --virtual .build-deps \
     # Install only production dependencies
     && cd /app \
     && npm install --omit=dev --no-audit --no-fund \
+    # Upgrade systeminformation to fix CVE-2025-68154, CVE-2026-26280, CVE-2026-26318
+    && npm install systeminformation@5.31.0 --omit=dev --no-audit --no-fund --save \
     # Clean up build artifacts and cache
     && npm cache clean --force \
     && rm -rf /tmp/* \
     && apk del .build-deps
 
 # Production stage - Final container
-FROM alpine:3.22.2
+FROM alpine:3.23.3
 
 # Build arguments for labels
 ARG BUILD_DATE
@@ -73,6 +75,8 @@ RUN apk --initdb add --no-cache \
     nghttp2-dev \
     # Create required directories
     && mkdir -p /app /config /defaults \
+    # Upgrade zlib to fix CVE-2026-22184
+    && apk add --no-cache --upgrade zlib \
     # Remove unnecessary packages to reduce size
     && rm -rf /var/cache/apk/*
 

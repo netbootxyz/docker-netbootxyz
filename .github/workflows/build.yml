@@ -9,11 +9,58 @@ on:
         description: 'Optional tag suffix (e.g., "test-feature")'
         required: false
         default: ''
-    
-jobs:
-  build:
-    runs-on: ubuntu-latest
 
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_suffix: ${{ steps.tags.outputs.tag_suffix }}
+      is_pr: ${{ steps.tags.outputs.is_pr }}
+      webapp_release: ${{ steps.webapp.outputs.webapp_release }}
+      build_date: ${{ steps.tags.outputs.build_date }}
+    steps:
+    - name: Get latest Webapp release version
+      id: webapp
+      run: |
+        WEBAPP_RELEASE=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" | jq -r '. | .tag_name')
+        echo "webapp_release=${WEBAPP_RELEASE}" >> $GITHUB_OUTPUT
+
+    - name: Determine tag strategy
+      id: tags
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        PR_NUMBER: ${{ github.event.number }}
+        INPUT_TAG_SUFFIX: ${{ github.event.inputs.tag_suffix }}
+      run: |
+        if [ "$EVENT_NAME" == "pull_request" ]; then
+          echo "tag_suffix=pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+          echo "is_pr=true" >> $GITHUB_OUTPUT
+        elif [ "$EVENT_NAME" == "workflow_dispatch" ]; then
+          if [ -n "$INPUT_TAG_SUFFIX" ]; then
+            SANITIZED=$(echo "$INPUT_TAG_SUFFIX" | tr -cd '[:alnum:]-_' | cut -c1-50)
+            if [ -n "$SANITIZED" ]; then
+              echo "tag_suffix=test-${SANITIZED}" >> $GITHUB_OUTPUT
+            else
+              echo "tag_suffix=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "tag_suffix=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+          fi
+          echo "is_pr=false" >> $GITHUB_OUTPUT
+        else
+          echo "::error::Unsupported event type: $EVENT_NAME"
+          exit 1
+        fi
+        echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+  build-amd64:
+    needs: setup
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
@@ -22,9 +69,6 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-    
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
 
     - name: Login to the Docker Container Registry
       uses: docker/login-action@v3
@@ -39,72 +83,174 @@ jobs:
         username: ${{ secrets.GHCR_USER }}
         password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Get latest Webapp release version
-      run: |
-        WEBAPP_RELEASE=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" | jq -r '. | .tag_name')
-        echo "WEBAPP_RELEASE=${WEBAPP_RELEASE}" >> $GITHUB_ENV
-
-    - name: Determine tag strategy
-      id: tags
-      env:
-        EVENT_NAME: ${{ github.event_name }}
-        PR_NUMBER: ${{ github.event.number }}
-        INPUT_TAG_SUFFIX: ${{ github.event.inputs.tag_suffix }}
-      run: |
-        if [ "$EVENT_NAME" == "pull_request" ]; then
-          echo "TAG_SUFFIX=pr-${PR_NUMBER}" >> $GITHUB_ENV
-          echo "IS_PR=true" >> $GITHUB_ENV
-        elif [ "$EVENT_NAME" == "workflow_dispatch" ]; then
-          if [ -n "$INPUT_TAG_SUFFIX" ]; then
-            # Sanitize: keep only alphanumeric, hyphens, and underscores; max 50 chars
-            SANITIZED=$(echo "$INPUT_TAG_SUFFIX" | tr -cd '[:alnum:]-_' | cut -c1-50)
-            if [ -n "$SANITIZED" ]; then
-              echo "TAG_SUFFIX=test-${SANITIZED}" >> $GITHUB_ENV
-            else
-              echo "TAG_SUFFIX=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
-            fi
-          else
-            echo "TAG_SUFFIX=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
-          fi
-          echo "IS_PR=false" >> $GITHUB_ENV
-        fi
-
-    - name: Build and push test image
+    - name: Build and push (amd64)
+      id: build
       uses: docker/build-push-action@v6
       with:
-        push: true
         context: .
         file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         build-args: |
-          WEBAPP_VERSION=${{ env.WEBAPP_RELEASE }}
-          VERSION=${{ env.TAG_SUFFIX }}
-          BUILD_DATE=$(date +'%Y-%m-%dT%H:%M:%S')
-        tags: |
-          netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}
-          netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}-${{ github.sha }}
-          ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}
-          ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}-${{ github.sha }}
+          WEBAPP_VERSION=${{ needs.setup.outputs.webapp_release }}
+          VERSION=${{ needs.setup.outputs.tag_suffix }}
+          BUILD_DATE=${{ needs.setup.outputs.build_date }}
         labels: |
           org.opencontainers.image.title=netbootxyz
           org.opencontainers.image.description=netboot.xyz test image
-          org.opencontainers.image.version=${{ env.TAG_SUFFIX }}
+          org.opencontainers.image.version=${{ needs.setup.outputs.tag_suffix }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.source=https://github.com/netbootxyz/docker-netbootxyz
+        outputs: type=image,name=ghcr.io/netbootxyz/netbootxyz,push-by-digest=true,name-canonical=true,push=true
 
-    - name: Run Trivy vulnerability scanner
+    - name: Export digest
+      run: |
+        mkdir -p /tmp/digests
+        digest="${{ steps.build.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
+
+    - name: Upload digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-amd64
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Run Trivy vulnerability scanner (amd64)
       uses: aquasecurity/trivy-action@0.33.1
       with:
-        image-ref: 'ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}'
+        image-ref: 'ghcr.io/netbootxyz/netbootxyz@${{ steps.build.outputs.digest }}'
         version: 'v0.69.3'
         format: 'table'
-        exit-code: ${{ env.IS_PR == 'true' && '1' || '0' }}
+        exit-code: ${{ needs.setup.outputs.is_pr == 'true' && '1' || '0' }}
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
 
+  build-arm64:
+    needs: setup
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - name: Checkout
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      with:
+        fetch-depth: '0'
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to the Docker Container Registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Login to the GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Build and push (arm64)
+      id: build
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/arm64
+        build-args: |
+          WEBAPP_VERSION=${{ needs.setup.outputs.webapp_release }}
+          VERSION=${{ needs.setup.outputs.tag_suffix }}
+          BUILD_DATE=${{ needs.setup.outputs.build_date }}
+        labels: |
+          org.opencontainers.image.title=netbootxyz
+          org.opencontainers.image.description=netboot.xyz test image
+          org.opencontainers.image.version=${{ needs.setup.outputs.tag_suffix }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.source=https://github.com/netbootxyz/docker-netbootxyz
+        outputs: type=image,name=ghcr.io/netbootxyz/netbootxyz,push-by-digest=true,name-canonical=true,push=true
+
+    - name: Export digest
+      run: |
+        mkdir -p /tmp/digests
+        digest="${{ steps.build.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
+
+    - name: Upload digest
+      uses: actions/upload-artifact@v4
+      with:
+        name: digests-arm64
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Run Trivy vulnerability scanner (arm64)
+      uses: aquasecurity/trivy-action@0.33.1
+      env:
+        TRIVY_PLATFORM: linux/arm64
+      with:
+        image-ref: 'ghcr.io/netbootxyz/netbootxyz@${{ steps.build.outputs.digest }}'
+        version: 'v0.69.3'
+        format: 'table'
+        exit-code: ${{ needs.setup.outputs.is_pr == 'true' && '1' || '0' }}
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+
+  manifest:
+    needs: [setup, build-amd64, build-arm64]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to the Docker Container Registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Login to the GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.GHCR_USER }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Download digests
+      uses: actions/download-artifact@v4
+      with:
+        path: /tmp/digests
+        pattern: digests-*
+        merge-multiple: true
+
+    - name: Create manifest list and push (GHCR)
+      working-directory: /tmp/digests
+      run: |
+        TAG_SUFFIX="${{ needs.setup.outputs.tag_suffix }}"
+        SHA="${{ github.sha }}"
+        docker buildx imagetools create \
+          -t "ghcr.io/netbootxyz/netbootxyz:${TAG_SUFFIX}" \
+          -t "ghcr.io/netbootxyz/netbootxyz:${TAG_SUFFIX}-${SHA}" \
+          $(printf 'ghcr.io/netbootxyz/netbootxyz@sha256:%s ' *)
+
+    - name: Create manifest list and push (Docker Hub)
+      working-directory: /tmp/digests
+      run: |
+        TAG_SUFFIX="${{ needs.setup.outputs.tag_suffix }}"
+        SHA="${{ github.sha }}"
+        docker buildx imagetools create \
+          -t "netbootxyz/netbootxyz:${TAG_SUFFIX}" \
+          -t "netbootxyz/netbootxyz:${TAG_SUFFIX}-${SHA}" \
+          $(printf 'ghcr.io/netbootxyz/netbootxyz@sha256:%s ' *)
+
+  comment:
+    needs: [setup, manifest]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
     - name: Comment on PR with test instructions
-      if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
         script: |
@@ -148,7 +294,7 @@ jobs:
 
           ---
           📦 **SHA:** \`${{ github.sha }}\`
-          🏷️ **Webapp Version:** \`${{ env.WEBAPP_RELEASE }}\`
+          🏷️ **Webapp Version:** \`${{ needs.setup.outputs.webapp_release }}\`
           `;
 
           github.rest.issues.createComment({
@@ -157,4 +303,3 @@ jobs:
             repo: context.repo.repo,
             body: comment
           });
-
