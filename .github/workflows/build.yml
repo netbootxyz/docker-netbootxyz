@@ -96,6 +96,7 @@ jobs:
       uses: aquasecurity/trivy-action@0.33.1
       with:
         image-ref: 'ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}'
+        version: 'v0.69.3'
         format: 'table'
         exit-code: ${{ env.IS_PR == 'true' && '1' || '0' }}
         ignore-unfixed: true
