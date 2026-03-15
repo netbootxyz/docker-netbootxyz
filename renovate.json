@@ -1,5 +1,17 @@
 {
   "extends": [
     "config:base"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track iPXE Secure Boot release version pinned in init.sh",
+      "fileMatch": ["root/init\\.sh"],
+      "matchStrings": [
+        "IPXE_SB_VERSION=\"\\$\\{IPXE_SB_VERSION:-(?<currentValue>v[\\d.]+)\\}\""
+      ],
+      "depNameTemplate": "ipxe/ipxe",
+      "datasourceTemplate": "github-releases"
+    }
   ]
 }
