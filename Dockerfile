@@ -50,8 +50,9 @@ LABEL org.opencontainers.image.title="netboot.xyz" \
       maintainer="antonym"
 
 # Install runtime dependencies and configure system in a single layer
-RUN apk --initdb add --no-cache alpine-baselayout busybox
-RUN apk add --no-cache \
+RUN apk --initdb add --no-cache \
+    # Base system
+    alpine-baselayout \
     # Core utilities
     bash \
     busybox \
