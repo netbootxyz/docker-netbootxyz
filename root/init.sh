@@ -108,30 +108,41 @@ if [[ ! -f /config/menus/remote/menu.ipxe ]]; then
     /tmp/ipxeboot.tar.gz -sL \
     "https://github.com/ipxe/ipxe/releases/download/${IPXE_SB_VERSION}/ipxeboot.tar.gz"
   if [[ -f /tmp/ipxeboot.tar.gz ]] && [[ -s /tmp/ipxeboot.tar.gz ]]; then
-    mkdir -p \
-      /config/menus/remote/secureboot-x86_64 \
-      /config/menus/remote/secureboot-arm64
-    tar xf /tmp/ipxeboot.tar.gz -C /tmp
-    # x86_64 secure boot binaries
-    for f in shimx64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
-      cp "/tmp/ipxeboot/x86_64-sb/${f}" /config/menus/remote/secureboot-x86_64/
-    done
-    # arm64 secure boot binaries
-    for f in shimaa64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
-      cp "/tmp/ipxeboot/arm64-sb/${f}" /config/menus/remote/secureboot-arm64/
-    done
-    rm -rf /tmp/ipxeboot /tmp/ipxeboot.tar.gz
-    # download autoexec.ipxe boot script from netboot.xyz release
-    curl -o \
-      /tmp/autoexec.ipxe -sL \
-      "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/autoexec.ipxe"
-    if [[ -f /tmp/autoexec.ipxe ]] && [[ -s /tmp/autoexec.ipxe ]]; then
-      cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-x86_64/autoexec.ipxe
-      cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-arm64/autoexec.ipxe
-      rm -f /tmp/autoexec.ipxe
+    if tar xf /tmp/ipxeboot.tar.gz -C /tmp; then
+      mkdir -p \
+        /config/menus/remote/secureboot-x86_64 \
+        /config/menus/remote/secureboot-arm64
+      # x86_64 secure boot binaries
+      for f in shimx64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
+        if [[ -f "/tmp/ipxeboot/x86_64-sb/${f}" ]]; then
+          cp "/tmp/ipxeboot/x86_64-sb/${f}" /config/menus/remote/secureboot-x86_64/
+        else
+          echo "[netbootxyz-init] Warning: ${f} not found in iPXE x86_64-sb archive"
+        fi
+      done
+      # arm64 secure boot binaries
+      for f in shimaa64.efi ipxe-shim.efi ipxe.efi snponly.efi snponly-shim.efi; do
+        if [[ -f "/tmp/ipxeboot/arm64-sb/${f}" ]]; then
+          cp "/tmp/ipxeboot/arm64-sb/${f}" /config/menus/remote/secureboot-arm64/
+        else
+          echo "[netbootxyz-init] Warning: ${f} not found in iPXE arm64-sb archive"
+        fi
+      done
+      # download autoexec.ipxe boot script from netboot.xyz release
+      curl -o \
+        /tmp/autoexec.ipxe -sL \
+        "https://github.com/netbootxyz/netboot.xyz/releases/download/${MENU_VERSION}/autoexec.ipxe"
+      if [[ -f /tmp/autoexec.ipxe ]] && [[ -s /tmp/autoexec.ipxe ]]; then
+        cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-x86_64/autoexec.ipxe
+        cp /tmp/autoexec.ipxe /config/menus/remote/secureboot-arm64/autoexec.ipxe
+        rm -f /tmp/autoexec.ipxe
+      else
+        echo "[netbootxyz-init] autoexec.ipxe not available for ${MENU_VERSION}, skipping"
+      fi
     else
-      echo "[netbootxyz-init] autoexec.ipxe not available for ${MENU_VERSION}, skipping"
+      echo "[netbootxyz-init] Failed to extract iPXE Secure Boot archive, skipping"
     fi
+    rm -rf /tmp/ipxeboot /tmp/ipxeboot.tar.gz
   else
     echo "[netbootxyz-init] iPXE Secure Boot archive not available, skipping"
   fi
@@ -149,9 +160,11 @@ for file in /config/menus/remote/*; do
   [ -f "$file" ] && cp "$file" /config/menus/
 done
 # Copy Secure Boot subdirectories if present
+shopt -s nullglob
 for sbdir in /config/menus/remote/secureboot-*/; do
-  [ -d "$sbdir" ] && cp -r "$sbdir" /config/menus/
+  cp -r "$sbdir" /config/menus/
 done
+shopt -u nullglob
 if [ -d /config/menus/local ]; then
   for file in /config/menus/local/*; do
     [ -f "$file" ] && cp "$file" /config/menus/
