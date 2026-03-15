@@ -10,6 +10,11 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -17,6 +22,7 @@ jobs:
       tag_suffix: ${{ steps.tags.outputs.tag_suffix }}
       is_pr: ${{ steps.tags.outputs.is_pr }}
       webapp_release: ${{ steps.webapp.outputs.webapp_release }}
+      build_date: ${{ steps.tags.outputs.build_date }}
     steps:
     - name: Get latest Webapp release version
       id: webapp
@@ -46,7 +52,11 @@ jobs:
             echo "tag_suffix=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
           fi
           echo "is_pr=false" >> $GITHUB_OUTPUT
+        else
+          echo "::error::Unsupported event type: $EVENT_NAME"
+          exit 1
         fi
+        echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
   build-amd64:
     needs: setup
@@ -83,7 +93,7 @@ jobs:
         build-args: |
           WEBAPP_VERSION=${{ needs.setup.outputs.webapp_release }}
           VERSION=${{ needs.setup.outputs.tag_suffix }}
-          BUILD_DATE=$(date +'%Y-%m-%dT%H:%M:%S')
+          BUILD_DATE=${{ needs.setup.outputs.build_date }}
         labels: |
           org.opencontainers.image.title=netbootxyz
           org.opencontainers.image.description=netboot.xyz test image
@@ -152,7 +162,7 @@ jobs:
         build-args: |
           WEBAPP_VERSION=${{ needs.setup.outputs.webapp_release }}
           VERSION=${{ needs.setup.outputs.tag_suffix }}
-          BUILD_DATE=$(date +'%Y-%m-%dT%H:%M:%S')
+          BUILD_DATE=${{ needs.setup.outputs.build_date }}
         labels: |
           org.opencontainers.image.title=netbootxyz
           org.opencontainers.image.description=netboot.xyz test image
