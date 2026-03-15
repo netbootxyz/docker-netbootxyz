@@ -46,20 +46,30 @@ jobs:
 
     - name: Determine tag strategy
       id: tags
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        PR_NUMBER: ${{ github.event.number }}
+        INPUT_TAG_SUFFIX: ${{ github.event.inputs.tag_suffix }}
       run: |
-        if [ "${{ github.event_name }}" == "pull_request" ]; then
-          echo "TAG_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+        if [ "$EVENT_NAME" == "pull_request" ]; then
+          echo "TAG_SUFFIX=pr-${PR_NUMBER}" >> $GITHUB_ENV
           echo "IS_PR=true" >> $GITHUB_ENV
-        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          if [ -n "${{ github.event.inputs.tag_suffix }}" ]; then
-            echo "TAG_SUFFIX=test-${{ github.event.inputs.tag_suffix }}" >> $GITHUB_ENV
+        elif [ "$EVENT_NAME" == "workflow_dispatch" ]; then
+          if [ -n "$INPUT_TAG_SUFFIX" ]; then
+            # Sanitize: keep only alphanumeric, hyphens, and underscores; max 50 chars
+            SANITIZED=$(echo "$INPUT_TAG_SUFFIX" | tr -cd '[:alnum:]-_' | cut -c1-50)
+            if [ -n "$SANITIZED" ]; then
+              echo "TAG_SUFFIX=test-${SANITIZED}" >> $GITHUB_ENV
+            else
+              echo "TAG_SUFFIX=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+            fi
           else
             echo "TAG_SUFFIX=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
           fi
           echo "IS_PR=false" >> $GITHUB_ENV
         fi
 
-    - name: Build and push PR test image
+    - name: Build and push test image
       uses: docker/build-push-action@v6
       with:
         push: true
@@ -87,7 +97,7 @@ jobs:
       with:
         image-ref: 'ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}'
         format: 'table'
-        exit-code: '0'
+        exit-code: ${{ env.IS_PR == 'true' && '1' || '0' }}
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
