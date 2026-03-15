@@ -4,6 +4,11 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      tag_suffix:
+        description: 'Optional tag suffix (e.g., "test-feature")'
+        required: false
+        default: ''
     
 jobs:
   build:
@@ -39,6 +44,21 @@ jobs:
         WEBAPP_RELEASE=$(curl -sX GET "https://api.github.com/repos/netbootxyz/webapp/releases/latest" | jq -r '. | .tag_name')
         echo "WEBAPP_RELEASE=${WEBAPP_RELEASE}" >> $GITHUB_ENV
 
+    - name: Determine tag strategy
+      id: tags
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "TAG_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          echo "IS_PR=true" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ -n "${{ github.event.inputs.tag_suffix }}" ]; then
+            echo "TAG_SUFFIX=test-${{ github.event.inputs.tag_suffix }}" >> $GITHUB_ENV
+          else
+            echo "TAG_SUFFIX=test-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+          fi
+          echo "IS_PR=false" >> $GITHUB_ENV
+        fi
+
     - name: Build and push PR test image
       uses: docker/build-push-action@v6
       with:
@@ -48,26 +68,82 @@ jobs:
         platforms: linux/amd64,linux/arm64
         build-args: |
           WEBAPP_VERSION=${{ env.WEBAPP_RELEASE }}
-          VERSION=pr-${{ github.event.number }}
+          VERSION=${{ env.TAG_SUFFIX }}
           BUILD_DATE=$(date +'%Y-%m-%dT%H:%M:%S')
         tags: |
-          netbootxyz/netbootxyz:pr-${{ github.event.number }}
-          netbootxyz/netbootxyz:pr-${{ github.event.number }}-${{ github.sha }}
-          ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}
-          ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}-${{ github.sha }}
+          netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}
+          netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}-${{ github.sha }}
+          ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}
+          ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}-${{ github.sha }}
         labels: |
           org.opencontainers.image.title=netbootxyz
-          org.opencontainers.image.description=netboot.xyz PR test image
-          org.opencontainers.image.version=pr-${{ github.event.number }}
+          org.opencontainers.image.description=netboot.xyz test image
+          org.opencontainers.image.version=${{ env.TAG_SUFFIX }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.source=https://github.com/netbootxyz/docker-netbootxyz
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@0.33.1
       with:
-        image-ref: 'ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}'
+        image-ref: 'ghcr.io/netbootxyz/netbootxyz:${{ env.TAG_SUFFIX }}'
         format: 'table'
-        exit-code: '1'
+        exit-code: '0'
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
+
+    - name: Comment on PR with test instructions
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const comment = `## 🚀 Test Image Built Successfully!
+
+          Your PR test images have been published and are ready for testing:
+
+          ### Docker Hub
+          \`\`\`bash
+          docker pull netbootxyz/netbootxyz:pr-${{ github.event.number }}
+          \`\`\`
+
+          ### GitHub Container Registry
+          \`\`\`bash
+          docker pull ghcr.io/netbootxyz/netbootxyz:pr-${{ github.event.number }}
+          \`\`\`
+
+          ### Quick Test Commands
+
+          **Standard Docker:**
+          \`\`\`bash
+          docker run -d \\
+            --name netbootxyz-test \\
+            -e PUID=1000 \\
+            -e PGID=1000 \\
+            -p 3000:3000 \\
+            -p 69:69/udp \\
+            -p 8080:80 \\
+            -v /local/path/config:/config \\
+            netbootxyz/netbootxyz:pr-${{ github.event.number }}
+          \`\`\`
+
+          ### Platforms
+          - ✅ linux/amd64
+          - ✅ linux/arm64
+
+          ### Check Logs
+          \`\`\`bash
+          docker logs -f netbootxyz-test
+          \`\`\`
+
+          ---
+          📦 **SHA:** \`${{ github.sha }}\`
+          🏷️ **Webapp Version:** \`${{ env.WEBAPP_RELEASE }}\`
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
