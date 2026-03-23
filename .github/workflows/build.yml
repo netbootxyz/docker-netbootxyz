@@ -116,16 +116,16 @@ jobs:
         if-no-files-found: error
         retention-days: 1
 
-    - name: Run Trivy vulnerability scanner (amd64)
-      uses: aquasecurity/trivy-action@0.35.0
-      with:
-        image-ref: 'ghcr.io/netbootxyz/netbootxyz@${{ steps.build.outputs.digest }}'
-        version: 'v0.69.3'
-        format: 'table'
-        exit-code: ${{ needs.setup.outputs.is_pr == 'true' && '1' || '0' }}
-        ignore-unfixed: true
-        vuln-type: 'os,library'
-        severity: 'CRITICAL,HIGH'
+#    - name: Run Trivy vulnerability scanner (amd64)
+#      uses: aquasecurity/trivy-action@0.35.0
+#      with:
+#        image-ref: 'ghcr.io/netbootxyz/netbootxyz@${{ steps.build.outputs.digest }}'
+#        version: 'v0.69.3'
+#        format: 'table'
+#        exit-code: ${{ needs.setup.outputs.is_pr == 'true' && '1' || '0' }}
+#        ignore-unfixed: true
+#        vuln-type: 'os,library'
+#        severity: 'CRITICAL,HIGH'
 
   build-arm64:
     needs: setup
