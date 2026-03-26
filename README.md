@@ -227,3 +227,46 @@ The following bootfile names can be set as the boot file in the DHCP configurati
 | `netboot.xyz-arm64-snp.efi` | UEFI w/ Simple Network Protocol, attempts to boot all net devices |
 | `netboot.xyz-arm64-snponly.efi` | UEFI w/ Simple Network Protocol, only boots from device chained from |
 | `netboot.xyz-rpi4-snp.efi` | UEFI for Raspberry Pi 4, attempts to boot all net devices |
+
+## UEFI Secure Boot
+
+The container supports UEFI Secure Boot by downloading:
+
+- **Signed iPXE binaries** directly from the upstream [iPXE project release](https://github.com/ipxe/ipxe/releases) (`ipxeboot.tar.gz`). These are **unmodified** pre-built binaries from iPXE; netboot.xyz does not rebuild or alter them in any way. The default version is `v2.0.0` and can be overridden with the `IPXE_SB_VERSION` environment variable.
+- **`autoexec.ipxe`** boot script from the [netboot.xyz release](https://github.com/netbootxyz/netboot.xyz/releases), which chains into the netboot.xyz menu system.
+
+These are placed in subdirectories under `/config/menus/`:
+
+| directory | description |
+| ----------|-------------|
+| `secureboot-x86_64/` | x86_64 UEFI Secure Boot binaries |
+| `secureboot-arm64/` | ARM64 UEFI Secure Boot binaries |
+
+Each directory contains:
+
+| file | source | description |
+| -----|--------|-------------|
+| `shimx64.efi` / `shimaa64.efi` | iPXE release | Microsoft-signed shim (UEFI firmware entry point) |
+| `ipxe-shim.efi` | iPXE release | iPXE shim, loads iPXE with built-in NIC drivers |
+| `ipxe.efi` | iPXE release | iPXE binary signed by iPXE Secure Boot CA |
+| `snponly.efi` | iPXE release | SNP-only iPXE, boots from chained device only |
+| `snponly-shim.efi` | iPXE release | Shim for SNP-only iPXE |
+| `autoexec.ipxe` | netboot.xyz release | Boot script that chains into the netboot.xyz menu system |
+
+The boot flow is: UEFI firmware validates the Microsoft-signed shim, which loads iPXE (signed by iPXE Secure Boot CA), which auto-loads `autoexec.ipxe` (text script, no Secure Boot validation needed), which chains to the netboot.xyz menu.
+
+To use Secure Boot with DHCP/TFTP, point your DHCP server to the shim as the boot file:
+
+```shell
+# 64-bit x86 EFI with Secure Boot
+dhcp-match=set:efi64-sb,60,PXEClient:Arch:00007
+dhcp-boot=tag:efi64-sb,secureboot-x86_64/shimx64.efi,,SERVER_IP_ADDRESS
+
+# 64-bit ARM64 UEFI with Secure Boot
+dhcp-match=set:efi-arm64-sb,60,PXEClient:Arch:0000B
+dhcp-boot=tag:efi-arm64-sb,secureboot-arm64/shimaa64.efi,,SERVER_IP_ADDRESS
+```
+
+All files within a Secure Boot directory must remain together in the same TFTP path since the shim expects to find iPXE and the `autoexec.ipxe` script alongside it.
+
+> **Note:** Secure Boot files are downloaded independently of the menu files. Existing installs will automatically pick up Secure Boot binaries on the next container restart. The `autoexec.ipxe` boot script requires a netboot.xyz release that includes it — if `MENU_VERSION` points to an older release, the signed binaries will still be downloaded but the boot script will be missing and a warning will be logged.
