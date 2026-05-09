@@ -6,6 +6,12 @@ PGID=${PGID:-1000}
 
 echo "[init] Setting up user nbxyz with PUID=${PUID} and PGID=${PGID}"
 
+# Handle gid of group users if PGID is 100
+if [[ ${PGID} -eq 100 ]]; then
+    echo "[init] PGID ${PGID} is the same GID of group users, change users to 1000"
+    groupmod -g 1000 users
+fi
+
 # Create group with specified GID if it doesn't exist
 if ! getent group ${PGID} > /dev/null 2>&1; then
     groupadd -g ${PGID} nbxyz
