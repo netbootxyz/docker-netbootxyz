@@ -1,7 +1,16 @@
 server {
-	listen ${NGINX_PORT};
-	location / {
-		root /assets;
-		autoindex on;
-	}
+        listen ${NGINX_PORT};
+
+        set $v_filename nf;
+
+        location ~ ^/(.*)$ {
+                try_files $uri $uri/ @netboot;
+                set $v_filename $1;
+                root /assets;
+                autoindex on;
+        }
+
+        location @netboot {
+                return 302      https://github.com/netbootxyz/$v_filename;
+        }
 }
